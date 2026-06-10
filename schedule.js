@@ -262,11 +262,15 @@
     if(!el) return;
     var ym = scheduleMonth.getFullYear()+'-'+pad2(scheduleMonth.getMonth()+1);
     var monthJobs = scheduleJobs.filter(function(j){return j.date && j.date.indexOf(ym)===0;});
-    var total = monthJobs.reduce(function(s,j){return s+(parseFloat(j.total)||0);},0);
-    var inspection = monthJobs.filter(function(j){return j.visitType==='inspection';}).length;
-    var montages = monthJobs.filter(function(j){return ['first_stage','second_stage','one_stage','route','ready_route'].indexOf(j.visitType)>=0;}).length;
-    var serviceRepair = monthJobs.filter(function(j){return ['maintenance','repair'].indexOf(j.visitType)>=0;}).length;
-    el.innerHTML = '<div><b>'+monthJobs.length+'</b><span>выездов за месяц</span></div><div><b>'+inspection+'</b><span>осмотров</span></div><div><b>'+montages+'</b><span>монтажных выездов</span></div><div><b>'+fmt(total)+'</b><span>сумма месяца</span></div>'+(serviceRepair?'<div><b>'+serviceRepair+'</b><span>ТО / ремонт</span></div>':'');
+    var counts = VISIT_TYPES.reduce(function(acc,type){acc[type.value]=0;return acc;},{});
+    monthJobs.forEach(function(j){
+      var type = j.visitType || visitTypeFromLegacy(j.status);
+      if(counts[type] === undefined) counts[type] = 0;
+      counts[type] += 1;
+    });
+    el.innerHTML = VISIT_TYPES.map(function(type){
+      return '<div class="schedule-stat-chip"><b>'+counts[type.value]+'</b><span>'+esc(type.label)+'</span></div>';
+    }).join('');
   }
 
   function renderScheduleMonth(){
