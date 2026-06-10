@@ -904,3 +904,366 @@ thead th:nth-child(4){
   .tariff-cards{grid-template-columns:1fr}
   .tariff-card{min-height:auto;padding:16px 12px}
 }
+
+/* ABOUT PAGE PREMIUM V18 */
+#page-about{
+  max-width:980px;
+  margin:0 auto;
+  padding:28px 18px 96px;
+}
+#page-about *{box-sizing:border-box;min-width:0}
+.about-premium-hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(59,130,246,.28);
+  border-radius:22px;
+  padding:30px 30px 28px;
+  margin-bottom:18px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(59,130,246,.30), transparent 34%),
+    radial-gradient(circle at 92% 16%, rgba(16,185,129,.18), transparent 32%),
+    linear-gradient(145deg, rgba(30,41,59,.92), rgba(15,23,42,.88));
+  box-shadow:0 18px 50px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.about-premium-hero::after{
+  content:"";
+  position:absolute;
+  inset:auto -80px -110px auto;
+  width:260px;
+  height:260px;
+  background:rgba(59,130,246,.10);
+  border-radius:999px;
+  filter:blur(10px);
+  pointer-events:none;
+}
+.about-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid rgba(96,165,250,.22);
+  background:rgba(15,23,42,.36);
+  color:#93c5fd;
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.about-premium-hero h1{
+  margin:0 0 10px;
+  font-size:clamp(30px,4vw,48px);
+  line-height:1.02;
+  letter-spacing:.03em;
+  color:#60a5fa;
+  font-weight:950;
+}
+.about-premium-hero p{
+  max-width:720px;
+  margin:0;
+  color:#e5e7eb;
+  font-size:clamp(16px,1.7vw,20px);
+  line-height:1.45;
+  font-weight:650;
+}
+.about-hero-points{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:20px;
+}
+.about-hero-points span{
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:8px 12px;
+  border-radius:12px;
+  background:rgba(15,23,42,.44);
+  border:1px solid rgba(148,163,184,.18);
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:750;
+  line-height:1.25;
+}
+#page-about .about-section{
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:16px;
+  background:linear-gradient(180deg, rgba(30,41,59,.78), rgba(30,41,59,.62));
+  box-shadow:0 12px 34px rgba(0,0,0,.12);
+}
+#page-about .about-section-title{
+  margin:0 0 14px;
+  color:#f8fafc;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.02em;
+  line-height:1.25;
+}
+.about-value-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.about-value-card{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  gap:12px;
+  align-items:start;
+  background:rgba(15,23,42,.28);
+  border:1px solid rgba(148,163,184,.14);
+  border-radius:16px;
+  padding:16px;
+}
+.about-value-icon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(59,130,246,.26), rgba(16,185,129,.14));
+  border:1px solid rgba(96,165,250,.26);
+  color:#60a5fa;
+  font-size:12px;
+  font-weight:950;
+  line-height:1;
+}
+.about-value-card b{
+  display:block;
+  margin:0 0 6px;
+  color:#f8fafc;
+  font-size:14px;
+  line-height:1.25;
+  font-weight:900;
+}
+.about-value-card p{
+  margin:0;
+  color:#b6c2d2;
+  font-size:12.5px;
+  line-height:1.48;
+  font-weight:550;
+}
+.about-fit-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.about-fit-row>div{
+  border:1px solid rgba(148,163,184,.14);
+  background:rgba(15,23,42,.22);
+  border-radius:14px;
+  padding:14px;
+}
+.about-fit-row b{
+  display:block;
+  color:#f8fafc;
+  font-size:13px;
+  line-height:1.25;
+  margin-bottom:6px;
+}
+.about-fit-row span{
+  display:block;
+  color:#b6c2d2;
+  font-size:12px;
+  line-height:1.42;
+}
+.about-section-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.about-section-head .about-section-title{margin-bottom:5px!important}
+.about-section-head p,
+.about-support-section p{
+  margin:0;
+  color:#b6c2d2;
+  font-size:12.5px;
+  line-height:1.45;
+}
+.premium-tariffs{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+#page-about .tariff-card{
+  border-radius:18px;
+  padding:18px 14px;
+  min-height:142px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border:1px solid rgba(148,163,184,.18);
+  background:rgba(15,23,42,.30);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+#page-about .tariff-card.tariff-month{
+  border-color:rgba(96,165,250,.28);
+  background:linear-gradient(180deg,rgba(59,130,246,.13),rgba(15,23,42,.28));
+}
+#page-about .tariff-card.tariff-popular{
+  border-color:rgba(96,165,250,.45);
+  background:linear-gradient(180deg,rgba(59,130,246,.20),rgba(15,23,42,.30));
+}
+#page-about .tariff-card.tariff-best{
+  border-color:rgba(16,185,129,.52);
+  background:linear-gradient(180deg,rgba(16,185,129,.18),rgba(15,23,42,.30));
+}
+#page-about .tariff-badge{
+  margin:0 0 8px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#3b82f6;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  line-height:1;
+}
+#page-about .tariff-badge-best{background:#10b981}
+#page-about .tariff-name{
+  margin:0 0 8px;
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:750;
+  line-height:1.2;
+}
+#page-about .tariff-price{
+  color:#60a5fa;
+  font-size:25px;
+  font-weight:950;
+  line-height:1.1;
+  letter-spacing:.01em;
+}
+#page-about .tariff-card.tariff-best .tariff-price{color:#34d399}
+#page-about .tariff-old{
+  margin-top:5px;
+  color:#7d8796;
+  font-size:12px;
+  text-decoration:line-through;
+}
+#page-about .tariff-note{
+  margin-top:9px;
+  color:#cbd5e1;
+  font-size:12px;
+  line-height:1.3;
+  text-align:center;
+  font-weight:650;
+}
+#page-about .payment-note{
+  margin:14px 0 0;
+  text-align:center;
+  color:#cbd5e1;
+  font-size:13px;
+  line-height:1.45;
+  font-weight:700;
+}
+.about-support-section{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+#page-about .contact-link{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:12px 18px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2563eb,#3b82f6);
+  color:#fff;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:900;
+  box-shadow:0 14px 28px rgba(37,99,235,.22);
+}
+@media(max-width:760px){
+  #page-about{padding:18px 16px 110px}
+  .about-premium-hero{padding:24px 18px;border-radius:18px;text-align:left}
+  .about-premium-hero h1{font-size:34px}
+  .about-premium-hero p{font-size:16px;line-height:1.42}
+  .about-hero-points{gap:7px;margin-top:16px}
+  .about-hero-points span{width:100%;min-height:32px;font-size:12px}
+  #page-about .about-section{padding:16px;border-radius:16px;margin-bottom:14px}
+  .about-value-grid{grid-template-columns:1fr;gap:10px}
+  .about-value-card{grid-template-columns:38px minmax(0,1fr);padding:14px;gap:10px}
+  .about-value-card b{font-size:13.5px}
+  .about-value-card p{font-size:12px;line-height:1.45}
+  .about-fit-row{grid-template-columns:1fr;gap:10px}
+  .premium-tariffs{grid-template-columns:1fr!important;gap:10px!important}
+  #page-about .tariff-card{min-height:118px;padding:16px 12px}
+  .about-support-section{display:block}
+  #page-about .contact-link{width:100%;margin-top:12px}
+}
+@media(min-width:761px) and (max-width:1040px){
+  #page-about{max-width:900px;padding-left:22px;padding-right:22px}
+}
+
+/* v20 about page refinements */
+#page-about .about-value-card b,
+#page-about .about-value-card p,
+#page-about .about-fit-row b,
+#page-about .about-fit-row span,
+#page-about .about-section-title,
+#page-about .about-premium-hero p {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+#page-about .tariff-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 148px;
+  text-align: center;
+}
+
+#page-about .tariff-note.tariff-economy {
+  display: block !important;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--success, #18c37e);
+  letter-spacing: .01em;
+  line-height: 1.25;
+}
+
+#page-about .tariff-month .tariff-note {
+  margin-top: 10px;
+}
+
+#page-about .about-value-grid {
+  align-items: stretch;
+}
+
+#page-about .about-value-card {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  #page-about .about-premium-hero,
+  #page-about .about-section {
+    text-align: left;
+  }
+  #page-about .about-hero-points {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  #page-about .about-value-card {
+    grid-template-columns: 42px 1fr;
+    gap: 12px;
+  }
+  #page-about .tariff-card {
+    min-height: 132px;
+  }
+}
