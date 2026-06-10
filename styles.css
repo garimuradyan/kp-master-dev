@@ -744,24 +744,58 @@ thead th:nth-child(4){
   .schedule-stat-chip b{font-size:16px !important;min-width:20px !important}
 }
 
-/* В строках прайса и оборудования оставляем подписи только в верхней шапке, без дублей внутри каждой строки */
+
+/* === v15: настройки — убираем верхнюю шапку, подписи оставляем внутри каждой строки === */
+#section-settings .card .services-header:has(+ #priceList),
+#section-settings .card .services-header:has(+ #equipmentPriceList){display:none!important}
 #priceList .settings-price-cell > span,
-#equipmentPriceList .settings-price-cell > span{display:none !important}
+#equipmentPriceList .settings-price-cell > span{
+  display:block!important;
+  font-size:9px!important;
+  line-height:1!important;
+  color:var(--text3)!important;
+  text-transform:uppercase!important;
+  letter-spacing:.9px!important;
+  font-weight:900!important;
+  padding-left:2px!important;
+  margin:0 0 5px!important;
+  white-space:nowrap!important;
+}
 #priceList .settings-price-cell,
-#equipmentPriceList .settings-price-cell{gap:0 !important}
+#equipmentPriceList .settings-price-cell{gap:0!important;min-width:0!important}
 #priceList .settings-price-row,
 #equipmentPriceList .settings-price-row{
-  grid-template-columns:minmax(0,1fr) minmax(78px,96px) minmax(46px,58px) 30px !important;
-  align-items:center !important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(78px,96px) minmax(46px,58px) 30px!important;
+  gap:8px!important;
+  align-items:stretch!important;
+  padding:10px!important;
 }
 #priceList .settings-price-row textarea,
-#equipmentPriceList .settings-price-row textarea{min-height:54px !important}
+#equipmentPriceList .settings-price-row textarea{min-height:54px!important;max-height:96px!important;overflow:auto!important}
 #priceList .settings-price-row input,
-#equipmentPriceList .settings-price-row input{height:38px !important;text-align:left !important}
+#equipmentPriceList .settings-price-row input{height:38px!important;text-align:left!important}
 @media(max-width:430px){
   #priceList .settings-price-row,
   #equipmentPriceList .settings-price-row{
-    grid-template-columns:minmax(0,1fr) minmax(72px,86px) 28px !important;
-    grid-template-areas:"name price del" "name unit del" !important;
+    grid-template-columns:minmax(0,1fr) minmax(72px,86px) 28px!important;
+    grid-template-areas:"name price del" "name unit del"!important;
   }
+  .settings-name-cell{grid-area:name!important}
+  .settings-price-cell-price{grid-area:price!important}
+  .settings-price-cell-unit{grid-area:unit!important}
+  #priceList .settings-price-row .delete-btn,
+  #equipmentPriceList .settings-price-row .delete-btn{grid-area:del!important;align-self:center!important}
+}
+
+/* === v15: аналитика — название слева, зелёная цифра справа === */
+#scheduleStats.schedule-stats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#scheduleStats .schedule-stat-chip{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;text-align:left!important;min-width:0!important}
+#scheduleStats .schedule-stat-name{order:1!important;flex:1 1 auto!important;min-width:0!important;margin:0!important;color:var(--text2)!important;font-size:10px!important;line-height:1.18!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.45px!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#scheduleStats .schedule-stat-count{order:2!important;flex:0 0 auto!important;min-width:26px!important;text-align:right!important;color:#10b981!important;font-size:20px!important;font-weight:950!important;line-height:1!important;text-shadow:0 0 15px rgba(16,185,129,.25)!important}
+@media(max-width:560px){
+  #scheduleStats.schedule-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  #scheduleStats .schedule-stat-chip{padding:7px 8px!important;min-height:38px!important;gap:7px!important}
+  #scheduleStats .schedule-stat-name{font-size:8.5px!important;letter-spacing:.22px!important;line-height:1.12!important}
+  #scheduleStats .schedule-stat-count{font-size:16px!important;min-width:20px!important}
 }

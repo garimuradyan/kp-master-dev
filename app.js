@@ -246,9 +246,9 @@ function renderPriceList(){
   var list=document.getElementById('priceList');if(!list)return;
   list.innerHTML=priceItems.map(function(p,i){
     return'<div class="service-row settings-price-row">'+
-    '<label class="settings-price-cell settings-name-cell"><textarea rows="2" maxlength="120" placeholder="Услуга" oninput="priceItems['+i+'].name=this.value">'+esc(p.name)+'</textarea></label>'+
-    '<label class="settings-price-cell settings-price-cell-price"><input type="number" min="0" value="'+p.price+'" placeholder="Цена" oninput="priceItems['+i+'].price=parseFloat(this.value)||0"></label>'+
-    '<label class="settings-price-cell settings-price-cell-unit"><input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" placeholder="Ед." oninput="priceItems['+i+'].unit=this.value"></label>'+
+    '<label class="settings-price-cell settings-name-cell"><span>Услуга</span><textarea rows="2" maxlength="120" placeholder="Услуга" oninput="priceItems['+i+'].name=this.value">'+esc(p.name)+'</textarea></label>'+
+    '<label class="settings-price-cell settings-price-cell-price"><span>Цена</span><input type="number" min="0" value="'+p.price+'" placeholder="Цена" oninput="priceItems['+i+'].price=parseFloat(this.value)||0"></label>'+
+    '<label class="settings-price-cell settings-price-cell-unit"><span>Ед.</span><input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" placeholder="Ед." oninput="priceItems['+i+'].unit=this.value"></label>'+
     '<button class="delete-btn" onclick="removePriceItem('+i+')">✕</button></div>';
   }).join('');
 }
@@ -277,9 +277,9 @@ function renderEquipmentList(){
   var list=document.getElementById('equipmentPriceList');if(!list)return;
   list.innerHTML=equipmentItems.map(function(p,i){
     return'<div class="service-row settings-price-row">'+
-    '<label class="settings-price-cell settings-name-cell"><textarea rows="2" maxlength="140" placeholder="Оборудование" oninput="equipmentItems['+i+'].name=this.value">'+esc(p.name)+'</textarea></label>'+
-    '<label class="settings-price-cell settings-price-cell-price"><input type="number" min="0" value="'+p.price+'" placeholder="Цена" oninput="equipmentItems['+i+'].price=parseFloat(this.value)||0"></label>'+
-    '<label class="settings-price-cell settings-price-cell-unit"><input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" placeholder="Ед." oninput="equipmentItems['+i+'].unit=this.value"></label>'+
+    '<label class="settings-price-cell settings-name-cell"><span>Оборудование</span><textarea rows="2" maxlength="140" placeholder="Оборудование" oninput="equipmentItems['+i+'].name=this.value">'+esc(p.name)+'</textarea></label>'+
+    '<label class="settings-price-cell settings-price-cell-price"><span>Цена</span><input type="number" min="0" value="'+p.price+'" placeholder="Цена" oninput="equipmentItems['+i+'].price=parseFloat(this.value)||0"></label>'+
+    '<label class="settings-price-cell settings-price-cell-unit"><span>Ед.</span><input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" placeholder="Ед." oninput="equipmentItems['+i+'].unit=this.value"></label>'+
     '<button class="delete-btn" onclick="removeEquipmentItem('+i+')">✕</button></div>';
   }).join('');
 }
