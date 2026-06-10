@@ -331,7 +331,7 @@
     });
     el.innerHTML = VISIT_TYPES.map(function(type){
       var label = VISIT_STAT_LABELS[type.value] || type.label;
-      return '<div class="schedule-stat-chip"><span>'+esc(label)+'</span><b>'+counts[type.value]+'</b></div>';
+      return '<div class="schedule-stat-chip"><span class="schedule-stat-name">'+esc(label)+'</span><b class="schedule-stat-count">'+counts[type.value]+'</b></div>';
     }).join('');
   }
 
