@@ -291,7 +291,7 @@
       if(key===scheduleSelectedDate) classes.push('is-selected');
       if(key===dateKey(new Date())) classes.push('is-today');
       if(dayJobs.length) classes.push('has-jobs');
-      cells.push('<button class="'+classes.join(' ')+'" onclick="selectScheduleDate(\''+key+'\')"><span class="day-num">'+d+'</span>'+(dayJobs.length?'<span class="day-count">'+dayJobs.length+'</span><span class="day-money">'+shortMoney(total)+'</span>':'')+'</button>');
+      cells.push('<button class="'+classes.join(' ')+'" onclick="selectScheduleDate(\''+key+'\')" aria-label="'+d+' '+scheduleMonth.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})+(dayJobs.length?'. Выездов: '+dayJobs.length:'')+'"><span class="day-num">'+d+'</span>'+(dayJobs.length?'<span class="day-count" title="Выездов: '+dayJobs.length+'">'+dayJobs.length+'</span>':'')+'</button>');
     }
     grid.innerHTML = cells.join('');
   }

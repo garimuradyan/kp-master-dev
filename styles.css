@@ -295,15 +295,15 @@ thead th:nth-child(4){
 .schedule-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}
 .schedule-weekdays span{text-align:center;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
 .schedule-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.schedule-day{position:relative;min-height:78px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;padding:8px;text-align:left;transition:all .15s;overflow:hidden}
+.schedule-day{position:relative;min-height:78px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;transition:all .15s;overflow:hidden}
 .schedule-day:hover{border-color:var(--accent);transform:translateY(-1px)}
 .schedule-day.is-empty{visibility:hidden;cursor:default}
 .schedule-day.is-selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)}
-.schedule-day.is-today .day-num{background:var(--accent);color:#fff;border-radius:999px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
+.schedule-day.is-today .day-num{background:var(--accent);color:#fff;border-radius:999px;min-width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(59,130,246,.22)}
 .schedule-day.has-jobs{background:linear-gradient(180deg,var(--surface2),rgba(0,200,255,.06))}
-.day-num{font-weight:900;font-size:13px}
-.day-count{position:absolute;top:8px;right:8px;background:var(--success);color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 6px}
-.day-money{position:absolute;left:8px;bottom:8px;color:var(--success);font-size:11px;font-weight:800;max-width:calc(100% - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-num{font-weight:900;font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}
+.day-count{position:absolute;top:6px;right:6px;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;border-radius:8px;min-width:22px;height:22px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 6px;border:1px solid rgba(255,255,255,.16);box-shadow:0 6px 14px rgba(37,99,235,.28)}
+.day-money{display:none}
 .schedule-day-list{display:flex;flex-direction:column;gap:10px}
 .schedule-job{display:grid;grid-template-columns:74px minmax(0,1fr);gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;min-width:0}
 .schedule-job-time{color:var(--accent);font-size:12px;line-height:1.4;white-space:nowrap}
@@ -319,7 +319,7 @@ thead th:nth-child(4){
 .schedule-note{margin-top:8px;font-size:12px;color:var(--text2);border-left:3px solid var(--warn);padding-left:8px;overflow-wrap:anywhere}
 .schedule-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 @media(max-width:850px){.schedule-layout{grid-template-columns:1fr}.schedule-stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.schedule-stats{grid-template-columns:1fr 1fr}.schedule-day{min-height:62px;padding:6px}.day-money{display:none}.schedule-job{grid-template-columns:1fr}.schedule-job-time{display:flex;gap:4px;align-items:baseline}.kp-modal-box{padding:18px}.modal-actions .btn{flex:1}.schedule-toolbar .btn{flex:1}.schedule-toolbar input[type=month]{max-width:none}}
+@media(max-width:560px){.schedule-stats{grid-template-columns:1fr 1fr}.schedule-day{min-height:60px;padding:6px}.day-num{font-size:16px;min-width:26px;min-height:26px}.schedule-day.is-today .day-num{min-width:28px;height:28px}.day-count{top:5px;right:5px;min-width:18px;height:18px;font-size:10px;padding:0 4px}.schedule-job{grid-template-columns:1fr}.schedule-job-time{display:flex;gap:4px;align-items:baseline}.kp-modal-box{padding:18px}.modal-actions .btn{flex:1}.schedule-toolbar .btn{flex:1}.schedule-toolbar input[type=month]{max-width:none}}
 
 /* === Safe contract editing + signature pad === */
 .settings-note{font-size:12px;color:var(--text2);line-height:1.5;margin:0 0 12px}
