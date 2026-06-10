@@ -145,7 +145,7 @@
     window.__pendingQuoteSnapshot = null;
 
     if(!job.date){toast('Выберите дату','error');return;}
-    if(!job.clientName){toast('Введите клиента','error');return;}
+    if(!job.clientName){toast('Введите данные клиента','error');return;}
     if(!items.length){toast('Добавьте работы из списка услуг','error');return;}
 
     var idx = scheduleJobs.findIndex(function(x){return x.id===job.id;});
