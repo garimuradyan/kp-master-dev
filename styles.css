@@ -799,3 +799,79 @@ thead th:nth-child(4){
   #scheduleStats .schedule-stat-name{font-size:8.5px!important;letter-spacing:.22px!important;line-height:1.12!important}
   #scheduleStats .schedule-stat-count{font-size:16px!important;min-width:20px!important}
 }
+
+/* === v16: подписи внутри строк настроек — работ и оборудования === */
+#priceList .settings-price-row,
+#equipmentPriceList .settings-price-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(76px,96px) minmax(46px,62px) 30px!important;
+  gap:8px!important;
+  align-items:stretch!important;
+  padding:10px!important;
+}
+#priceList .settings-price-cell,
+#equipmentPriceList .settings-price-cell{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+#priceList .settings-row-label,
+#equipmentPriceList .settings-row-label{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  height:auto!important;
+  position:static!important;
+  clip:auto!important;
+  overflow:visible!important;
+  margin:0!important;
+  padding:0 0 0 2px!important;
+  font-style:normal!important;
+  font-size:9px!important;
+  line-height:1!important;
+  color:var(--text3)!important;
+  text-transform:uppercase!important;
+  letter-spacing:.9px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+#priceList .settings-price-cell > span,
+#equipmentPriceList .settings-price-cell > span{display:none!important}
+#priceList .settings-price-row textarea,
+#equipmentPriceList .settings-price-row textarea{
+  min-height:54px!important;
+  max-height:96px!important;
+  overflow:auto!important;
+}
+#priceList .settings-price-row input,
+#equipmentPriceList .settings-price-row input{
+  height:38px!important;
+  text-align:left!important;
+  min-width:0!important;
+}
+#priceList .settings-price-cell-price input,
+#equipmentPriceList .settings-price-cell-price input{
+  color:var(--accent)!important;
+  font-weight:900!important;
+}
+@media(max-width:430px){
+  #priceList .settings-price-row,
+  #equipmentPriceList .settings-price-row{
+    grid-template-columns:minmax(0,1fr) minmax(72px,86px) 28px!important;
+    grid-template-areas:"name price del" "name unit del"!important;
+    gap:7px!important;
+  }
+  #priceList .settings-name-cell,
+  #equipmentPriceList .settings-name-cell{grid-area:name!important}
+  #priceList .settings-price-cell-price,
+  #equipmentPriceList .settings-price-cell-price{grid-area:price!important}
+  #priceList .settings-price-cell-unit,
+  #equipmentPriceList .settings-price-cell-unit{grid-area:unit!important}
+  #priceList .settings-price-row .delete-btn,
+  #equipmentPriceList .settings-price-row .delete-btn{grid-area:del!important;align-self:center!important}
+  #priceList .settings-row-label,
+  #equipmentPriceList .settings-row-label{font-size:8.5px!important;letter-spacing:.7px!important}
+  #priceList .settings-price-row textarea,
+  #equipmentPriceList .settings-price-row textarea{min-height:88px!important}
+}
