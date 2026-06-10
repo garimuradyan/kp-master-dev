@@ -320,3 +320,25 @@ thead th:nth-child(4){
 .schedule-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 @media(max-width:850px){.schedule-layout{grid-template-columns:1fr}.schedule-stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.schedule-stats{grid-template-columns:1fr 1fr}.schedule-day{min-height:62px;padding:6px}.day-money{display:none}.schedule-job{grid-template-columns:1fr}.schedule-job-time{display:flex;gap:4px;align-items:baseline}.kp-modal-box{padding:18px}.modal-actions .btn{flex:1}.schedule-toolbar .btn{flex:1}.schedule-toolbar input[type=month]{max-width:none}}
+
+/* === Safe contract editing + signature pad === */
+.settings-note{font-size:12px;color:var(--text2);line-height:1.5;margin:0 0 12px}
+.signature-pad-wrap{background:#fff;border:1px dashed var(--border);border-radius:12px;padding:8px;touch-action:none}
+.signature-pad-wrap canvas{display:block;width:100%;height:180px;background:#fff;border-radius:8px;touch-action:none;cursor:crosshair}
+.contract-template-textarea{min-height:420px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;white-space:pre-wrap}
+
+/* === Schedule corrections === */
+.schedule-month-switch{display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.schedule-month-switch #scheduleMonthInput{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.schedule-month-label{min-width:128px;text-align:center;white-space:nowrap}
+.schedule-lock-note{font-size:12px;color:var(--warn);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.45}
+.schedule-price-picker{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.schedule-price-picker select{flex:1;min-width:0}
+.schedule-items-list{display:flex;flex-direction:column;gap:6px}
+.schedule-items-empty{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text3)}
+.schedule-item-row{display:grid;grid-template-columns:minmax(0,1fr) 86px 62px 92px 28px;gap:6px;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px}
+.schedule-item-name{font-size:12px;color:var(--text);overflow-wrap:anywhere;min-width:0}
+.schedule-item-price,.schedule-item-total{font-size:12px;font-weight:800;color:var(--accent);text-align:right;white-space:nowrap}
+.schedule-item-row input{padding:7px 6px;text-align:center;font-size:12px}
+.visit-type-badge{background:rgba(0,200,255,.12);color:var(--accent)}
+@media(max-width:560px){.schedule-month-switch{width:100%}.schedule-month-switch .btn{flex:0 0 auto}.schedule-month-label{flex:1;min-width:0}.schedule-price-picker{flex-direction:column;align-items:stretch}.schedule-item-row{grid-template-columns:1fr 54px 28px}.schedule-item-price{display:none}.schedule-item-total{font-size:11px}.schedule-item-row input{width:100%}}

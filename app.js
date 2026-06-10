@@ -27,6 +27,8 @@ window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('keyInput').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
   document.getElementById('priceModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
   document.getElementById('photoUrlInput').addEventListener('keydown',function(e){if(e.key==='Enter')loadPhotoFromUrl();});
+  setupSignaturePad();
+  if(document.getElementById('s-contract-body') && window.KP_DEFAULT_CONTRACT_BODY){document.getElementById('s-contract-body').value=window.KP_DEFAULT_CONTRACT_BODY;}
 });
 
 async function doLogin(){
@@ -112,6 +114,8 @@ function applySettings(){
   if(settings.warranty)document.getElementById('s-warranty').value=settings.warranty;
   if(settings.color){document.getElementById('s-color').value=settings.color;document.getElementById('colorHex').textContent=settings.color;}
   if(settings.signature)document.getElementById('s-signature').value=settings.signature;
+  if(document.getElementById('s-contract-body')) document.getElementById('s-contract-body').value = settings.contractBody || window.KP_DEFAULT_CONTRACT_BODY || '';
+  if(settings.signatureImage) drawSavedSignature(settings.signatureImage);
   if(settings.logo){logoDataURL=settings.logo;document.getElementById('logoPreviewWrap').innerHTML='<img src="'+logoDataURL+'" class="logo-preview">';}
 }
 
@@ -124,7 +128,7 @@ function showPage(name,el){
   if(bnav)bnav.classList.add('active');
   if(name==='history')renderHistory();
   if(name==='schedule'&&typeof renderSchedule==='function')renderSchedule();
-  if(name==='settings')renderPriceList();
+  if(name==='settings'){renderPriceList();setTimeout(resizeSignatureCanvas,50);}
   if(name==='admin')loadAdminData();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -242,6 +246,8 @@ async function saveSettings(showMsg){
     warranty:document.getElementById('s-warranty').value,
     color:document.getElementById('s-color').value,
     signature:document.getElementById('s-signature').value,
+    signatureImage:(typeof getSignatureImageForSave==='function' ? getSignatureImageForSave() : ((settings && settings.signatureImage) || '')),
+    contractBody:document.getElementById('s-contract-body') ? document.getElementById('s-contract-body').value : '',
     logo:logoDataURL
   };
   var args=Object.assign(rpcAuthParams(),{p_settings:settings,p_items:priceItems});
@@ -252,12 +258,99 @@ async function saveSettings(showMsg){
 
 function handleLogo(e){
   var file=e.target.files[0];if(!file)return;
-  if(file.size>2*1024*1024){toast('Файл слишком большой','error');return;}
+  if(file.size>5*1024*1024){toast('Файл слишком большой','error');return;}
   var r=new FileReader();
-  r.onload=function(ev){logoDataURL=ev.target.result;document.getElementById('logoPreviewWrap').innerHTML='<img src="'+logoDataURL+'" class="logo-preview">';toast('Логотип загружен ✓','success');};
+  r.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var c=document.createElement('canvas'),max=200,w=img.naturalWidth,h=img.naturalHeight;
+      if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}
+      c.width=w;c.height=h;
+      var ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+      logoDataURL=c.toDataURL('image/jpeg',0.6);
+      document.getElementById('logoPreviewWrap').innerHTML='<img src="'+logoDataURL+'" class="logo-preview">';
+      toast('Логотип загружен ✓','success');
+    };
+    img.src=ev.target.result;
+  };
   r.readAsDataURL(file);
 }
 function clearLogo(){logoDataURL=null;document.getElementById('logoPreviewWrap').innerHTML='<div style="color:var(--text3);font-size:13px"><div style="font-size:32px;margin-bottom:8px">🖼</div><p>Нажмите для загрузки</p></div>';}
+
+// SIGNATURE PAD
+var signatureCanvas=null,signatureCtx=null,signatureDrawing=false,signatureHasInk=false;
+function setupSignaturePad(){
+  signatureCanvas=document.getElementById('signatureCanvas');
+  if(!signatureCanvas)return;
+  signatureCtx=signatureCanvas.getContext('2d');
+  resizeSignatureCanvas();
+  ['pointerdown','pointermove','pointerup','pointerleave','pointercancel'].forEach(function(ev){signatureCanvas.addEventListener(ev,handleSignaturePointer);});
+  window.addEventListener('resize',function(){setTimeout(resizeSignatureCanvas,80);});
+}
+function resizeSignatureCanvas(){
+  if(!signatureCanvas)return;
+  var saved = settings && settings.signatureImage ? settings.signatureImage : (signatureHasInk ? signatureCanvas.toDataURL('image/png') : '');
+  var rect=signatureCanvas.getBoundingClientRect();
+  var ratio=Math.max(1,window.devicePixelRatio||1);
+  var w=Math.max(320,Math.round((rect.width||640)*ratio)), h=Math.round(180*ratio);
+  if(signatureCanvas.width!==w || signatureCanvas.height!==h){signatureCanvas.width=w;signatureCanvas.height=h;}
+  signatureCtx=signatureCanvas.getContext('2d');
+  signatureCtx.setTransform(1,0,0,1,0,0);
+  signatureCtx.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);
+  signatureCtx.lineWidth=2.4*ratio;signatureCtx.lineCap='round';signatureCtx.lineJoin='round';signatureCtx.strokeStyle='#111827';
+  if(saved) drawSavedSignature(saved);
+}
+function handleSignaturePointer(e){
+  if(!signatureCtx)return;
+  e.preventDefault();
+  var p=getSignaturePoint(e);
+  if(e.type==='pointerdown'){
+    signatureDrawing=true;signatureHasInk=true;signatureCanvas.setPointerCapture&&signatureCanvas.setPointerCapture(e.pointerId);
+    signatureCtx.beginPath();signatureCtx.moveTo(p.x,p.y);return;
+  }
+  if(e.type==='pointermove'&&signatureDrawing){signatureCtx.lineTo(p.x,p.y);signatureCtx.stroke();return;}
+  if(e.type==='pointerup'||e.type==='pointerleave'||e.type==='pointercancel') signatureDrawing=false;
+}
+function getSignaturePoint(e){
+  var rect=signatureCanvas.getBoundingClientRect();
+  return {x:(e.clientX-rect.left)*(signatureCanvas.width/rect.width),y:(e.clientY-rect.top)*(signatureCanvas.height/rect.height)};
+}
+function clearSignaturePad(){
+  if(!signatureCanvas||!signatureCtx)return;
+  signatureCtx.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);
+  signatureHasInk=false;
+  if(settings)settings.signatureImage='';
+  toast('Подпись очищена','success');
+}
+function getSignatureImageForSave(){
+  if(signatureCanvas && signatureHasInk) return signatureCanvas.toDataURL('image/png');
+  return (settings && settings.signatureImage) || '';
+}
+function saveSignaturePad(){
+  if(!signatureCanvas){toast('Поле подписи не найдено','error');return;}
+  if(!signatureHasInk && !(settings&&settings.signatureImage)){toast('Сначала поставьте подпись','error');return;}
+  settings.signatureImage=signatureCanvas.toDataURL('image/png');
+  toast('Подпись сохранена ✓','success');
+}
+function drawSavedSignature(dataURL){
+  if(!signatureCanvas||!signatureCtx||!dataURL)return;
+  var img=new Image();
+  img.onload=function(){
+    signatureCtx.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);
+    var ratio=Math.min(signatureCanvas.width/img.width,signatureCanvas.height/img.height);
+    var w=img.width*ratio,h=img.height*ratio;
+    signatureCtx.drawImage(img,(signatureCanvas.width-w)/2,(signatureCanvas.height-h)/2,w,h);
+    signatureHasInk=true;
+  };
+  img.src=dataURL;
+}
+function resetContractTemplate(){
+  var el=document.getElementById('s-contract-body');
+  if(!el)return;
+  if(!confirm('Вернуть стандартный текст договора?'))return;
+  el.value=window.KP_DEFAULT_CONTRACT_BODY||'';
+  toast('Стандартный договор восстановлен','success');
+}
 
 // PHOTOS
 function renderPhotos(){

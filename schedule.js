@@ -1,20 +1,23 @@
-/* График монтажей. Сейчас хранение локальное, чтобы не ломать Supabase/RPC. */
+/* График выездов. Сейчас хранение локальное, чтобы не ломать Supabase/RPC. */
 (function(){
   var scheduleJobs = [];
   var scheduleMonth = new Date();
   var scheduleSelectedDate = dateKey(new Date());
   var loadedForKey = null;
+  var scheduleModalItems = [];
+  var scheduleModalLockedByQuote = false;
 
-  var STATUS = {
-    new:['Новая заявка','status-new'],
-    planned:['Запланирован','status-planned'],
-    confirmed:['Подтверждён','status-confirmed'],
-    inwork:['В работе','status-inwork'],
-    done:['Выполнен','status-done'],
-    paid:['Оплачен','status-paid'],
-    moved:['Перенесён','status-moved'],
-    cancelled:['Отменён','status-cancelled']
-  };
+  var VISIT_TYPES = [
+    {value:'inspection',label:'Осмотр'},
+    {value:'first_stage',label:'Первый этап'},
+    {value:'second_stage',label:'Второй этап'},
+    {value:'one_stage',label:'Монтаж в один этап'},
+    {value:'route',label:'Закладка трассы'},
+    {value:'ready_route',label:'Монтаж на готовую трассу'},
+    {value:'maintenance',label:'Тех. обслуживание (ТО)'},
+    {value:'repair',label:'Ремонт'}
+  ];
+  var VISIT_LABELS = VISIT_TYPES.reduce(function(a,x){a[x.value]=x.label;return a;},{});
 
   window.renderSchedule = function(){
     ensureScheduleLoaded();
@@ -29,6 +32,13 @@
     renderSchedule();
   };
 
+  window.openScheduleMonthPicker = function(){
+    var input=document.getElementById('scheduleMonthInput');
+    if(!input)return;
+    if(input.showPicker) input.showPicker();
+    else input.click();
+  };
+
   window.setScheduleToday = function(){
     var now = new Date();
     scheduleMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -37,9 +47,9 @@
   };
 
   window.setScheduleMonthFromInput = function(){
-    var val = document.getElementById('scheduleMonthInput').value;
-    if(!val) return;
-    var p = val.split('-');
+    var v = val('scheduleMonthInput');
+    if(!v) return;
+    var p = v.split('-');
     scheduleMonth = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1);
     renderSchedule();
   };
@@ -55,8 +65,8 @@
     ensureScheduleLoaded();
     var job = jobId ? scheduleJobs.find(function(x){return x.id===jobId;}) : null;
     fillScheduleModal(job || {
-      id:'', date:scheduleSelectedDate || dateKey(new Date()), start:'10:00', end:'13:00', status:'planned',
-      clientName:'', phone:'', address:'', works:'', total:'', source:'', notes:''
+      id:'', date:scheduleSelectedDate || dateKey(new Date()), start:'10:00', end:'13:00', visitType:'inspection',
+      clientName:'', phone:'', address:'', items:[], works:'', total:'', source:'Без КП', notes:''
     });
     var modal = document.getElementById('scheduleModal');
     if(modal) modal.style.display='flex';
@@ -66,12 +76,13 @@
     if(typeof validateClient === 'function' && !validateClient()) return;
     var c = typeof getClientData === 'function' ? getClientData() : {};
     var t = typeof getTotals === 'function' ? getTotals() : {grand:0};
-    var works = (window.services || []).map(function(s){return s.name + (s.qty ? ' × '+s.qty : '');}).filter(Boolean).join('\n');
+    var items = JSON.parse(JSON.stringify(window.services || []));
+    if(!items.length){toast('Добавьте работы в КП','error');return;}
+    var quoteSnapshot = makeQuoteSnapshot();
     fillScheduleModal({
-      id:'', date:scheduleSelectedDate || dateKey(new Date()), start:'10:00', end:'13:00', status:'planned',
-      clientName:c.name||'', phone:c.phone||'', address:c.addr||'', works:works,
-      total:t.grand||'', source:'КП', notes:c.notes||'',
-      quoteSnapshot: makeQuoteSnapshot()
+      id:'', date:scheduleSelectedDate || dateKey(new Date()), start:'10:00', end:'13:00', visitType:'one_stage',
+      clientName:c.name||'', phone:c.phone||'', address:c.addr||'', items:items, works:itemsToWorks(items),
+      total:t.grand||0, source:'КП', notes:c.notes||'', quoteSnapshot: quoteSnapshot
     });
     var modal = document.getElementById('scheduleModal');
     if(modal) modal.style.display='flex';
@@ -82,30 +93,60 @@
     if(modal) modal.style.display='none';
   };
 
+  window.addScheduleItemFromSelect = function(){
+    if(scheduleModalLockedByQuote) return;
+    var sel=document.getElementById('schPriceSelect');
+    if(!sel || !sel.value){toast('Выберите услугу из списка','error');return;}
+    var p=(window.priceItems||[])[parseInt(sel.value,10)];
+    if(!p){toast('Услуга не найдена','error');return;}
+    scheduleModalItems.push({name:p.name||'',price:parseFloat(p.price)||0,qty:1,unit:p.unit||'шт'});
+    renderScheduleItemsEditor();
+  };
+
+  window.changeScheduleItemQty = function(i,v){
+    if(scheduleModalLockedByQuote || !scheduleModalItems[i]) return;
+    scheduleModalItems[i].qty = Math.max(1,parseFloat(v)||1);
+    renderScheduleItemsEditor();
+  };
+
+  window.removeScheduleItem = function(i){
+    if(scheduleModalLockedByQuote) return;
+    scheduleModalItems.splice(i,1);
+    renderScheduleItemsEditor();
+  };
+
   window.saveScheduleJob = function(){
     ensureScheduleLoaded();
     var id = val('scheduleEditId');
+    var old = id ? scheduleJobs.find(function(x){return x.id===id;}) : null;
+    var quoteSnapshot = (old && old.quoteSnapshot) || window.__pendingQuoteSnapshot || null;
+    var lockedByQuote = !!quoteSnapshot;
+    var items = lockedByQuote ? normalizeItemsFromQuoteSnapshot(quoteSnapshot) : JSON.parse(JSON.stringify(scheduleModalItems || []));
+    var total = lockedByQuote ? quoteTotal(quoteSnapshot) : calcItemsTotal(items);
+    var source = lockedByQuote ? 'КП' : 'Без КП';
+
     var job = {
       id: id || ('job_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),
       date: val('schDate'),
       start: val('schStart') || '10:00',
       end: val('schEnd') || '',
-      status: val('schStatus') || 'planned',
+      visitType: val('schVisitType') || 'inspection',
       clientName: val('schClient'),
       phone: val('schPhone'),
       address: val('schAddress'),
-      works: val('schWorks'),
-      total: parseFloat(val('schTotal')) || 0,
-      source: val('schSource'),
+      items: items,
+      works: itemsToWorks(items),
+      total: total,
+      source: source,
       notes: val('schNotes'),
       updatedAt: new Date().toISOString()
     };
+    if(quoteSnapshot) job.quoteSnapshot = quoteSnapshot;
+    window.__pendingQuoteSnapshot = null;
+
     if(!job.date){toast('Выберите дату','error');return;}
     if(!job.clientName){toast('Введите клиента','error');return;}
-    var old = id ? scheduleJobs.find(function(x){return x.id===id;}) : null;
-    if(old && old.quoteSnapshot) job.quoteSnapshot = old.quoteSnapshot;
-    if(!old && window.__pendingQuoteSnapshot) job.quoteSnapshot = window.__pendingQuoteSnapshot;
-    window.__pendingQuoteSnapshot = null;
+    if(!items.length){toast('Добавьте работы из списка услуг','error');return;}
 
     var idx = scheduleJobs.findIndex(function(x){return x.id===job.id;});
     if(idx>=0) scheduleJobs[idx]=job; else scheduleJobs.push(job);
@@ -115,7 +156,7 @@
     scheduleMonth = new Date(d.getFullYear(), d.getMonth(), 1);
     closeScheduleModal();
     renderSchedule();
-    toast('Монтаж сохранён ✓','success');
+    toast('Выезд сохранён ✓','success');
   };
 
   window.deleteScheduleJobFromModal = function(){
@@ -126,16 +167,16 @@
   };
 
   window.deleteScheduleJob = function(id){
-    if(!confirm('Удалить монтаж из графика?')) return;
+    if(!confirm('Удалить выезд из графика?')) return;
     scheduleJobs = scheduleJobs.filter(function(x){return x.id!==id;});
     saveScheduleJobs();
     renderSchedule();
-    toast('Монтаж удалён','success');
+    toast('Выезд удалён','success');
   };
 
   window.loadScheduleQuote = function(id){
     var job = scheduleJobs.find(function(x){return x.id===id;});
-    if(!job || !job.quoteSnapshot){toast('К этому монтажу не привязан снимок КП','error');return;}
+    if(!job || !job.quoteSnapshot){toast('К этому выезду не привязано КП','error');return;}
     var q = job.quoteSnapshot;
     setIf('c-name',q.client && q.client.name);
     setIf('c-phone',q.client && q.client.phone);
@@ -153,21 +194,67 @@
   };
 
   function fillScheduleModal(job){
+    var quoteSnapshot = job.quoteSnapshot || null;
+    scheduleModalLockedByQuote = !!quoteSnapshot || job.source==='КП';
+    scheduleModalItems = scheduleModalLockedByQuote
+      ? (quoteSnapshot ? normalizeItemsFromQuoteSnapshot(quoteSnapshot) : normalizeItemsFromJob(job))
+      : normalizeItemsFromJob(job);
+
     setIf('scheduleEditId',job.id||'');
     setIf('schDate',job.date||dateKey(new Date()));
     setIf('schStart',job.start||'10:00');
     setIf('schEnd',job.end||'13:00');
-    setIf('schStatus',job.status||'planned');
+    setIf('schVisitType',job.visitType||visitTypeFromLegacy(job.status));
     setIf('schClient',job.clientName||'');
     setIf('schPhone',job.phone||'');
     setIf('schAddress',job.address||'');
-    setIf('schWorks',job.works||'');
-    setIf('schTotal',job.total||'');
-    setIf('schSource',job.source||'');
+    setIf('schWorks',itemsToWorks(scheduleModalItems));
+    setIf('schTotal',scheduleModalLockedByQuote && quoteSnapshot ? quoteTotal(quoteSnapshot) : (job.total || calcItemsTotal(scheduleModalItems) || ''));
+    setIf('schSource',scheduleModalLockedByQuote ? 'КП' : 'Без КП');
+    setIf('schSourceView',scheduleModalLockedByQuote ? 'КП' : 'Без КП');
     setIf('schNotes',job.notes||'');
     var del = document.getElementById('scheduleDeleteBtn');
     if(del) del.style.display = job.id ? '' : 'none';
-    window.__pendingQuoteSnapshot = job.quoteSnapshot || null;
+    window.__pendingQuoteSnapshot = quoteSnapshot;
+    renderPriceSelect();
+    setScheduleQuoteLock(scheduleModalLockedByQuote);
+    renderScheduleItemsEditor();
+  }
+
+  function setScheduleQuoteLock(locked){
+    ['schClient','schPhone','schAddress'].forEach(function(id){var el=document.getElementById(id);if(el)el.readOnly=locked;});
+    var picker=document.getElementById('schPricePicker');
+    if(picker)picker.style.display=locked?'none':'flex';
+    var note=document.getElementById('schQuoteLockNote');
+    if(note)note.style.display=locked?'':'none';
+  }
+
+  function renderPriceSelect(){
+    var sel=document.getElementById('schPriceSelect');
+    if(!sel)return;
+    var items=window.priceItems||[];
+    if(!items.length){sel.innerHTML='<option value="">Прайс-лист пуст</option>';return;}
+    sel.innerHTML=items.map(function(p,i){return '<option value="'+i+'">'+esc(p.name)+' — '+fmt(parseFloat(p.price)||0)+'</option>';}).join('');
+  }
+
+  function renderScheduleItemsEditor(){
+    var list=document.getElementById('schItemsList');
+    if(!list)return;
+    if(!scheduleModalItems.length){
+      list.innerHTML='<div class="schedule-items-empty">Работы не выбраны</div>';
+    } else {
+      list.innerHTML=scheduleModalItems.map(function(it,i){
+        return '<div class="schedule-item-row">'+
+          '<div class="schedule-item-name">'+esc(it.name)+'</div>'+ 
+          '<div class="schedule-item-price">'+fmt(it.price||0)+'</div>'+ 
+          '<input type="number" min="1" value="'+esc(it.qty||1)+'" '+(scheduleModalLockedByQuote?'readonly':'oninput="changeScheduleItemQty('+i+',this.value)"')+'>'+ 
+          '<div class="schedule-item-total">'+fmt((parseFloat(it.price)||0)*(parseFloat(it.qty)||1))+'</div>'+ 
+          (scheduleModalLockedByQuote?'':'<button class="delete-btn" onclick="removeScheduleItem('+i+')">✕</button>')+
+        '</div>';
+      }).join('');
+    }
+    setIf('schWorks',itemsToWorks(scheduleModalItems));
+    setIf('schTotal',scheduleModalLockedByQuote && window.__pendingQuoteSnapshot ? quoteTotal(window.__pendingQuoteSnapshot) : calcItemsTotal(scheduleModalItems));
   }
 
   function renderScheduleStats(){
@@ -176,9 +263,10 @@
     var ym = scheduleMonth.getFullYear()+'-'+pad2(scheduleMonth.getMonth()+1);
     var monthJobs = scheduleJobs.filter(function(j){return j.date && j.date.indexOf(ym)===0;});
     var total = monthJobs.reduce(function(s,j){return s+(parseFloat(j.total)||0);},0);
-    var done = monthJobs.filter(function(j){return j.status==='done'||j.status==='paid';}).length;
-    var planned = monthJobs.filter(function(j){return ['new','planned','confirmed','inwork'].indexOf(j.status)>=0;}).length;
-    el.innerHTML = '<div><b>'+monthJobs.length+'</b><span>монтажей за месяц</span></div><div><b>'+planned+'</b><span>в работе/плане</span></div><div><b>'+done+'</b><span>выполнено</span></div><div><b>'+fmt(total)+'</b><span>сумма месяца</span></div>';
+    var inspection = monthJobs.filter(function(j){return j.visitType==='inspection';}).length;
+    var montages = monthJobs.filter(function(j){return ['first_stage','second_stage','one_stage','route','ready_route'].indexOf(j.visitType)>=0;}).length;
+    var serviceRepair = monthJobs.filter(function(j){return ['maintenance','repair'].indexOf(j.visitType)>=0;}).length;
+    el.innerHTML = '<div><b>'+monthJobs.length+'</b><span>выездов за месяц</span></div><div><b>'+inspection+'</b><span>осмотров</span></div><div><b>'+montages+'</b><span>монтажных выездов</span></div><div><b>'+fmt(total)+'</b><span>сумма месяца</span></div>'+(serviceRepair?'<div><b>'+serviceRepair+'</b><span>ТО / ремонт</span></div>':'');
   }
 
   function renderScheduleMonth(){
@@ -211,16 +299,17 @@
     var date = parseDateKey(scheduleSelectedDate);
     if(title) title.innerHTML = '<span class="icon">🧰</span> '+date.toLocaleDateString('ru-RU',{day:'numeric',month:'long',weekday:'long'});
     var jobs = scheduleJobs.filter(function(j){return j.date===scheduleSelectedDate;}).sort(function(a,b){return (a.start||'').localeCompare(b.start||'');});
-    if(!jobs.length){list.innerHTML='<div class="empty-state" style="padding:30px 10px"><div class="empty-icon">📭</div><p>На этот день монтажей нет</p><button class="btn btn-primary btn-sm" onclick="openScheduleModal()">+ Добавить</button></div>';return;}
+    if(!jobs.length){list.innerHTML='<div class="empty-state" style="padding:30px 10px"><div class="empty-icon">📭</div><p>На этот день выездов нет</p><button class="btn btn-primary btn-sm" onclick="openScheduleModal()">+ Добавить</button></div>';return;}
     list.innerHTML = jobs.map(function(j){
-      var st = STATUS[j.status] || STATUS.planned;
+      var typeLabel = VISIT_LABELS[j.visitType] || VISIT_LABELS[visitTypeFromLegacy(j.status)] || 'Выезд';
+      var works = j.works || itemsToWorks(normalizeItemsFromJob(j));
       return '<div class="schedule-job">'+
-        '<div class="schedule-job-time"><b>'+esc(j.start||'—')+'</b>'+(j.end?'–'+esc(j.end):'')+'</div>'+
-        '<div class="schedule-job-body"><div class="schedule-job-top"><b>'+esc(j.clientName)+'</b><span class="schedule-status '+st[1]+'">'+st[0]+'</span></div>'+
+        '<div class="schedule-job-time"><b>'+esc(j.start||'—')+'</b>'+(j.end?'–'+esc(j.end):'')+'</div>'+ 
+        '<div class="schedule-job-body"><div class="schedule-job-top"><b>'+esc(j.clientName)+'</b><span class="schedule-status visit-type-badge">'+esc(typeLabel)+'</span></div>'+ 
         (j.phone?'<div class="schedule-line">☎ '+esc(j.phone)+'</div>':'')+
         (j.address?'<div class="schedule-line">📍 '+esc(j.address)+'</div>':'')+
-        (j.works?'<div class="schedule-works">'+esc(j.works).replace(/\n/g,'<br>')+'</div>':'')+
-        '<div class="schedule-job-bottom"><span>'+(j.total?fmt(j.total):'Без суммы')+'</span>'+(j.source?'<span>'+esc(j.source)+'</span>':'')+'</div>'+
+        (works?'<div class="schedule-works">'+esc(works).replace(/\n/g,'<br>')+'</div>':'')+
+        '<div class="schedule-job-bottom"><span>'+(j.total?fmt(j.total):'Без суммы')+'</span>'+(j.source?'<span>'+esc(j.source)+'</span>':'')+'</div>'+ 
         (j.notes?'<div class="schedule-note">'+esc(j.notes)+'</div>':'')+
         '<div class="schedule-actions"><button class="btn btn-ghost btn-sm" onclick="openScheduleModal(\''+j.id+'\')">Изменить</button>'+(j.quoteSnapshot?'<button class="btn btn-ghost btn-sm" onclick="loadScheduleQuote(\''+j.id+'\')">Открыть КП</button>':'')+'<button class="btn btn-danger btn-sm" onclick="deleteScheduleJob(\''+j.id+'\')">Удалить</button></div>'+ 
         '</div></div>';
@@ -229,9 +318,11 @@
 
   function makeQuoteSnapshot(){
     var c = typeof getClientData === 'function' ? getClientData() : {};
+    var totals = typeof getTotals === 'function' ? getTotals() : {grand:0};
     return {
       client:Object.assign({},c),
       services:JSON.parse(JSON.stringify(window.services || [])),
+      totals:Object.assign({},totals),
       discount:{val:parseFloat(val('discountVal'))||0,type:val('discountType')||'percent'},
       prepay:parseFloat(val('prepayVal'))||0,
       createdAt:new Date().toISOString()
@@ -246,18 +337,30 @@
     catch(e){scheduleJobs=[];}
   }
 
-  function saveScheduleJobs(){
-    localStorage.setItem(storageKey(), JSON.stringify(scheduleJobs));
-  }
-
+  function saveScheduleJobs(){localStorage.setItem(storageKey(), JSON.stringify(scheduleJobs));}
   function storageKey(){return 'kp_schedule_'+(window.currentKeyId || localStorage.getItem('kp_key_id') || 'guest');}
+  function normalizeItemsFromQuoteSnapshot(q){return JSON.parse(JSON.stringify((q && q.services) || []));}
+  function quoteTotal(q){return (q && q.totals && parseFloat(q.totals.grand)) || calcItemsTotal(normalizeItemsFromQuoteSnapshot(q));}
+  function normalizeItemsFromJob(job){
+    if(job && Array.isArray(job.items) && job.items.length) return JSON.parse(JSON.stringify(job.items));
+    if(job && job.quoteSnapshot) return normalizeItemsFromQuoteSnapshot(job.quoteSnapshot);
+    if(job && job.works){return String(job.works).split('\n').filter(Boolean).map(function(name){return {name:name.replace(/ × .*$/,''),price:0,qty:1,unit:'шт'};});}
+    return [];
+  }
+  function itemsToWorks(items){return (items||[]).map(function(s){return (s.name||'') + (s.qty ? ' × '+s.qty : '');}).filter(Boolean).join('\n');}
+  function calcItemsTotal(items){return (items||[]).reduce(function(sum,s){return sum+(parseFloat(s.price)||0)*(parseFloat(s.qty)||1);},0);}
+  function visitTypeFromLegacy(status){return 'one_stage';}
   function dateKey(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
   function parseDateKey(key){var p=String(key||dateKey(new Date())).split('-');return new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10));}
   function pad2(n){return String(n).padStart(2,'0');}
   function val(id){var el=document.getElementById(id);return el?el.value:'';}
   function setIf(id,v){var el=document.getElementById(id);if(el)el.value=(v==null?'':v);}
   function shortMoney(n){n=Number(n)||0;if(n>=1000000)return Math.round(n/100000)/10+'м';if(n>=1000)return Math.round(n/1000)+'к';return n?String(n):'';}
-  function syncMonthInput(){var el=document.getElementById('scheduleMonthInput');if(el)el.value=scheduleMonth.getFullYear()+'-'+pad2(scheduleMonth.getMonth()+1);}
+  function syncMonthInput(){
+    var v=scheduleMonth.getFullYear()+'-'+pad2(scheduleMonth.getMonth()+1);
+    var el=document.getElementById('scheduleMonthInput');if(el)el.value=v;
+    var lbl=document.getElementById('scheduleMonthLabel');if(lbl)lbl.textContent=scheduleMonth.toLocaleDateString('ru-RU',{month:'long',year:'numeric'}).replace(/^./,function(ch){return ch.toUpperCase();});
+  }
 
   window.addEventListener('DOMContentLoaded',function(){
     var modal = document.getElementById('scheduleModal');
