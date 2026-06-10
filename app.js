@@ -1,7 +1,10 @@
 
 var SURL='https://otrghpobpaftixuaknvt.supabase.co';
 var SKEY='sb_publishable_gwb8J6z0aGUBOWYgXvzeeQ_xZvBrVj-';
-var sb=window.supabase.createClient(SURL,SKEY);
+var sb=null;
+try{
+  if(window.supabase&&window.supabase.createClient){sb=window.supabase.createClient(SURL,SKEY);}
+}catch(e){console.error('Supabase init error',e);}
 var currentKeyId=null,currentKeyData=null;
 var services=[],priceItems=[],settings={},historyData=[],logoDataURL=null,quotePhotos=[];
 var MAX_KP=15,MAX_PHOTOS=6,MAX_PHOTO_MB=5;
@@ -22,30 +25,50 @@ function getDeviceId(){
 }
 
 window.addEventListener('DOMContentLoaded',function(){
-  var sk=localStorage.getItem('kp_access_key'),sid=localStorage.getItem('kp_key_id');
-  if(sk&&sid) verifyKey(sk,parseInt(sid),true);
-  document.getElementById('keyInput').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-  document.getElementById('priceModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-  document.getElementById('photoUrlInput').addEventListener('keydown',function(e){if(e.key==='Enter')loadPhotoFromUrl();});
-  setupSignaturePad();
-  if(document.getElementById('s-contract-body') && window.KP_DEFAULT_CONTRACT_BODY){document.getElementById('s-contract-body').value=window.KP_DEFAULT_CONTRACT_BODY;}
+  try{
+    var sk=localStorage.getItem('kp_access_key'),sid=localStorage.getItem('kp_key_id');
+    if(sk&&sid) verifyKey(sk,parseInt(sid,10),true);
+    var keyInput=document.getElementById('keyInput');
+    if(keyInput) keyInput.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+    var priceModal=document.getElementById('priceModal');
+    if(priceModal) priceModal.addEventListener('click',function(e){if(e.target===this)closeModal();});
+    var photoUrlInput=document.getElementById('photoUrlInput');
+    if(photoUrlInput) photoUrlInput.addEventListener('keydown',function(e){if(e.key==='Enter')loadPhotoFromUrl();});
+    if(typeof setupSignaturePad==='function') setupSignaturePad();
+    var contractBody=document.getElementById('s-contract-body');
+    if(contractBody && window.KP_DEFAULT_CONTRACT_BODY) contractBody.value=window.KP_DEFAULT_CONTRACT_BODY;
+  }catch(e){
+    console.error('Init error',e);
+    setAuthMsg('Ошибка загрузки приложения. Обновите страницу.');
+  }
 });
 
 async function doLogin(){
-  var key=document.getElementById('keyInput').value.trim().toUpperCase();
-  if(!key){setAuthMsg('Введите ключ доступа');return;}
-  setAuthMsg('Проверяю...','var(--text2)');
-  var res=await sb.rpc('kp_login',{p_key:key,p_device_id:getDeviceId()});
-  if(res.error||rpcFailed(res)){setAuthMsg(rpcMsg(res,'Ключ не найден'));return;}
-  var data=res.data.key_data;
-  localStorage.setItem('kp_access_key',key);
-  localStorage.setItem('kp_key_id',data.id);
-  currentKeyId=data.id;currentKeyData=data;
-  showApp();
+  try{
+    var input=document.getElementById('keyInput');
+    var key=(input?input.value:'').trim().toUpperCase();
+    if(!key){setAuthMsg('Введите ключ доступа');return;}
+    if(!sb){setAuthMsg('Ошибка соединения. Обновите страницу и попробуйте снова.');return;}
+    setAuthMsg('Проверяю...','var(--text2)');
+    var res=await sb.rpc('kp_login',{p_key:key,p_device_id:getDeviceId()});
+    if(res.error||rpcFailed(res)){setAuthMsg(rpcMsg(res,'Ключ не найден'));return;}
+    var data=res.data&&res.data.key_data;
+    if(!data||!data.id){setAuthMsg('Ошибка входа. Данные ключа не получены.');return;}
+    localStorage.setItem('kp_access_key',key);
+    localStorage.setItem('kp_key_id',data.id);
+    currentKeyId=data.id;currentKeyData=data;
+    showApp();
+  }catch(e){
+    console.error('Login error',e);
+    setAuthMsg('Ошибка входа. Попробуйте обновить страницу.');
+  }
 }
 
 async function verifyKey(key,keyId,silent){
-  var res=await sb.rpc('kp_verify',{p_key:key,p_key_id:keyId,p_device_id:getDeviceId()});
+  if(!sb){if(!silent)setAuthMsg('Ошибка соединения. Обновите страницу.');return;}
+  var res;
+  try{res=await sb.rpc('kp_verify',{p_key:key,p_key_id:keyId,p_device_id:getDeviceId()});}
+  catch(e){console.error('Verify error',e);if(!silent)setAuthMsg('Ошибка проверки ключа');return;}
   if(res.error||rpcFailed(res)){
     // Не удаляем ключ из localStorage - просто показываем экран входа
     document.getElementById('authWrap').style.display='flex';

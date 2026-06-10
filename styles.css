@@ -441,94 +441,111 @@ thead th:nth-child(4){
   #scheduleModal .schedule-price-picker .btn{width:100%}
 }
 
-/* === Strict targeted adaptive fix v6 (no global layout stretching) === */
-html{overflow-x:hidden}
-body{overflow-x:hidden}
-.auth-box{max-width:380px!important}
-.app-body{width:100%;max-width:960px;margin-left:auto;margin-right:auto}
-.card,.auth-box,.kp-modal-box{max-width:100%;box-sizing:border-box}
-input,select,textarea,button{max-width:100%;box-sizing:border-box}
-
-/* Keep the original app proportions; fix only schedule widgets that can overflow. */
-.schedule-toolbar,.schedule-month-switch{max-width:100%;min-width:0}
-.schedule-month-switch{display:inline-grid!important;grid-template-columns:40px minmax(126px,170px) 40px;gap:6px;align-items:center}
-.schedule-month-switch .btn{min-width:0;white-space:nowrap}
-.schedule-month-label{min-width:0!important;max-width:170px!important;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-.schedule-stats{grid-template-columns:repeat(auto-fit,minmax(118px,1fr));max-width:100%}
-.schedule-stats>div,.schedule-stat-chip{min-width:0;overflow:hidden}
-.schedule-stats span,.schedule-stat-chip span{overflow-wrap:anywhere;word-break:normal}
-.schedule-layout,.schedule-calendar-card,.schedule-day-card,.schedule-month-grid,.schedule-weekdays,.schedule-day-list{min-width:0;max-width:100%}
-.schedule-day,.schedule-job{min-width:0;max-width:100%;overflow:hidden}
-.schedule-job *{min-width:0}
-.schedule-job-top b,.schedule-line,.schedule-works,.schedule-note{overflow-wrap:anywhere;word-break:break-word}
-
-/* Schedule modal: adaptive without touching auth/settings/main widths. */
-#scheduleModal{max-width:100vw;overflow:hidden auto;padding:12px!important;align-items:center;justify-content:center}
-#scheduleModal .kp-modal-box{width:min(760px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;overflow-y:auto!important;overflow-x:hidden!important;padding:18px!important}
-#scheduleModal .kp-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
-#scheduleModal .kp-modal-head .card-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#scheduleModal .form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;align-items:start!important;max-width:100%}
-#scheduleModal .field{min-width:0!important;max-width:100%!important;overflow:visible!important;grid-column:auto!important}
-#scheduleModal .field.span2{grid-column:1/-1!important}
-#scheduleModal label{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#scheduleModal input,#scheduleModal select,#scheduleModal textarea{display:block;width:100%!important;max-width:100%!important;min-width:0!important;border-radius:9px}
-#scheduleModal input[type=date],#scheduleModal input[type=time]{text-align:center;white-space:nowrap}
-#scheduleModal textarea{overflow-wrap:anywhere;word-break:break-word;resize:vertical}
-#scheduleModal .schedule-price-picker{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(108px,auto)!important;gap:8px!important;align-items:stretch!important;max-width:100%;overflow:hidden}
-#scheduleModal .schedule-price-picker select{min-width:0!important;max-width:100%!important;overflow:hidden;text-overflow:ellipsis}
-#scheduleModal .schedule-price-picker .btn{min-width:108px;white-space:nowrap}
-#scheduleModal .schedule-items-list{max-width:100%;overflow:hidden}
-#scheduleModal .schedule-items-empty{max-width:100%;overflow-wrap:anywhere}
-#scheduleModal .schedule-item-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(60px,78px) minmax(42px,54px) minmax(72px,88px) 28px!important;gap:6px!important;align-items:center;max-width:100%;overflow:hidden}
-#scheduleModal .schedule-item-row>*{min-width:0!important;max-width:100%!important}
-#scheduleModal .schedule-item-name{white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;line-height:1.25}
-#scheduleModal .schedule-item-price,#scheduleModal .schedule-item-total{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-align:right}
-#scheduleModal .delete-btn{width:28px;min-width:28px;max-width:28px;height:30px;display:flex;align-items:center;justify-content:center}
-
-@media(max-width:900px){
-  .schedule-layout{grid-template-columns:1fr!important}
-  .schedule-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .schedule-month-switch{grid-template-columns:40px minmax(126px,1fr) 40px;max-width:100%}
+/* === v7: точечная адаптация только окна графика, без изменения общего интерфейса === */
+#scheduleModal,
+#scheduleModal *{box-sizing:border-box}
+#scheduleModal{overflow-x:hidden}
+#scheduleModal .kp-modal-box{
+  width:min(760px, calc(100vw - 16px));
+  max-width:calc(100vw - 16px);
+  max-height:calc(100dvh - 16px);
+  overflow-y:auto;
+  overflow-x:hidden;
 }
+#scheduleModal .form-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  align-items:start;
+}
+#scheduleModal .field,
+#scheduleModal .field.span2{
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+}
+#scheduleModal .field.span2{grid-column:1/-1}
+#scheduleModal input,
+#scheduleModal select,
+#scheduleModal textarea{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  display:block;
+}
+#scheduleModal label{
+  display:block;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#scheduleModal .schedule-price-picker{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:stretch;
+  max-width:100%;
+  overflow:hidden;
+}
+#scheduleModal .schedule-price-picker select{min-width:0;max-width:100%}
+#scheduleModal .schedule-price-picker .btn{white-space:nowrap}
+#scheduleModal .schedule-items-list,
+#scheduleModal .schedule-items-empty{max-width:100%;overflow:hidden;overflow-wrap:anywhere}
+#scheduleModal .schedule-item-row{
+  max-width:100%;
+  min-width:0;
+  overflow:hidden;
+  grid-template-columns:minmax(0,1fr) minmax(54px,68px) minmax(76px,92px) 28px;
+}
+#scheduleModal .schedule-item-row>*{min-width:0;max-width:100%}
+#scheduleModal .schedule-item-price{display:none}
+#scheduleModal .schedule-item-name{white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+#scheduleModal .schedule-item-total{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
 
 @media(max-width:640px){
-  #scheduleModal{align-items:flex-start!important;padding:8px!important}
-  #scheduleModal .kp-modal-box{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;padding:14px!important;border-radius:14px!important}
+  #scheduleModal{padding:8px;align-items:flex-start}
+  #scheduleModal .kp-modal-box{
+    width:calc(100vw - 16px);
+    max-width:calc(100vw - 16px);
+    max-height:calc(100dvh - 16px);
+    padding:14px;
+    border-radius:14px;
+  }
   #scheduleModal .kp-modal-head{margin-bottom:10px}
-  #scheduleModal .form-grid{grid-template-columns:1fr!important;gap:9px!important}
-  #scheduleModal .field,#scheduleModal .field.span2{grid-column:1/-1!important}
-  #scheduleModal label{font-size:10px;letter-spacing:1px;white-space:normal;text-overflow:clip}
-  #scheduleModal input,#scheduleModal select{height:42px!important;min-height:42px!important;font-size:13px!important;padding:9px 10px!important}
-  #scheduleModal textarea{min-height:70px!important;font-size:13px!important;padding:9px 10px!important}
-  #scheduleModal .schedule-price-picker{grid-template-columns:minmax(0,1fr) minmax(106px,auto)!important;gap:6px!important}
-  #scheduleModal .schedule-price-picker .btn{height:42px;min-width:106px;padding-left:9px;padding-right:9px}
-  #scheduleModal .schedule-item-row{grid-template-columns:minmax(0,1fr) 48px minmax(68px,82px) 28px!important;gap:5px!important;padding:7px!important}
-  #scheduleModal .schedule-item-price{display:none!important}
-  #scheduleModal .schedule-item-total{font-size:11px!important}
-  #scheduleModal .schedule-item-row input{height:34px!important;min-height:34px!important;padding:6px 4px!important;text-align:center}
-  #scheduleModal .modal-actions{position:sticky;bottom:-14px;background:var(--surface);border-top:1px solid var(--border);padding-top:10px;margin-top:14px;display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
-  #scheduleModal .modal-actions span{display:none!important}
-  #scheduleModal .modal-actions .btn{width:100%;min-width:0;white-space:normal}
-  #scheduleModal .modal-actions #scheduleDeleteBtn{grid-column:1/-1}
-  .schedule-toolbar{gap:6px}
-  .schedule-month-switch{width:auto;max-width:100%;grid-template-columns:36px minmax(112px,150px) 36px}
-  .schedule-month-label{max-width:150px!important}
-}
-
-@media(max-width:420px){
-  #scheduleModal{padding:6px!important}
-  #scheduleModal .kp-modal-box{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;padding:12px!important}
+  #scheduleModal .form-grid{grid-template-columns:1fr!important;gap:8px}
+  #scheduleModal .field,
+  #scheduleModal .field.span2{grid-column:1/-1!important}
+  #scheduleModal input,
+  #scheduleModal select{height:42px;min-height:42px;font-size:13px;padding:9px 10px}
+  #scheduleModal textarea{min-height:68px;font-size:13px;padding:9px 10px}
   #scheduleModal .schedule-price-picker{grid-template-columns:1fr!important}
-  #scheduleModal .schedule-price-picker .btn{width:100%;white-space:normal}
-  #scheduleModal .schedule-item-row{grid-template-columns:minmax(0,1fr) 44px minmax(62px,74px) 26px!important;gap:4px!important}
-  #scheduleModal .schedule-item-name{font-size:11.5px!important}
-  #scheduleModal .schedule-item-total{font-size:10.5px!important}
-  #scheduleModal .delete-btn{width:26px;min-width:26px;max-width:26px}
+  #scheduleModal .schedule-price-picker .btn{width:100%;height:42px}
+  #scheduleModal .schedule-item-row{
+    grid-template-columns:minmax(0,1fr) 48px minmax(68px,82px) 28px!important;
+    gap:5px;
+    padding:7px;
+  }
+  #scheduleModal .schedule-item-row input{height:34px;min-height:34px;text-align:center;padding:6px 4px}
+  #scheduleModal .delete-btn{width:28px;min-width:28px;max-width:28px;height:30px;padding:0}
+  #scheduleModal .modal-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    position:sticky;
+    bottom:-14px;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    padding-top:10px;
+    margin-top:12px;
+  }
+  #scheduleModal .modal-actions span{display:none!important}
+  #scheduleModal .modal-actions .btn{width:100%;min-width:0;padding-left:10px;padding-right:10px}
+  #scheduleModal .modal-actions #scheduleDeleteBtn{grid-column:1/-1}
 }
 
-@media(max-width:340px){
-  #scheduleModal .schedule-item-row{grid-template-columns:1fr 42px 26px!important}
-  #scheduleModal .schedule-item-total{grid-column:1/-1;text-align:left!important}
-  #scheduleModal .modal-actions{grid-template-columns:1fr!important}
-  .schedule-month-switch{grid-template-columns:34px minmax(96px,1fr) 34px;width:100%}
+@media(max-width:360px){
+  #scheduleModal{padding:6px}
+  #scheduleModal .kp-modal-box{width:calc(100vw - 12px);max-width:calc(100vw - 12px);padding:12px}
+  #scheduleModal .schedule-item-row{grid-template-columns:minmax(0,1fr) 44px 26px!important}
+  #scheduleModal .schedule-item-total{grid-column:1/-1;text-align:left}
 }
