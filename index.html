@@ -44,6 +44,9 @@
 <span class="bnav-icon">📋</span>
 <span style="display:flex;align-items:center;gap:3px">История <span class="badge" id="histBadge">0</span></span>
 </button>
+<button class="bottom-nav-btn" id="bnav-schedule" onclick="showPage('schedule',this)">
+<span class="bnav-icon">📅</span>График
+</button>
 <button class="bottom-nav-btn" id="bnav-settings" onclick="showPage('settings',this)">
 <span class="bnav-icon">⚙️</span>Настройки
     </button>
@@ -127,6 +130,8 @@
 <div class="action-bar">
 <button class="btn btn-ghost" onclick="nextStep(2)">← Назад</button>
 <button class="btn btn-success" onclick="printPDF()">🖨 Получить PDF</button>
+<button class="btn btn-primary" onclick="openDocumentsModal()">🧾 Печать документов</button>
+<button class="btn btn-ghost" onclick="openScheduleModalFromQuote()">📅 В график</button>
 <button class="btn btn-primary" onclick="saveToHistory()">💾 Сохранить</button>
 <button class="btn btn-ghost" onclick="resetForm()">✦ Новое КП</button>
 </div>
@@ -140,6 +145,32 @@
 <div class="page" id="page-history">
 <div class="page-title">История <span>КП</span></div>
 <div class="history-list" id="historyList"></div>
+</div>
+<!-- SCHEDULE -->
+<div class="page" id="page-schedule">
+<div class="page-title">График <span>Монтажей</span></div>
+<div class="card schedule-head-card">
+<div class="card-title"><span class="icon">📅</span> Календарь монтажника</div>
+<p class="schedule-hint">Планируйте монтажи, переносы, оплату и быстрый возврат к КП. Сейчас график хранится локально в браузере; для общей синхронизации позже нужна отдельная таблица в Supabase.</p>
+<div class="schedule-toolbar">
+<button class="btn btn-ghost btn-sm" onclick="goScheduleMonth(-1)">← Месяц</button>
+<input id="scheduleMonthInput" onchange="setScheduleMonthFromInput()" type="month"/>
+<button class="btn btn-ghost btn-sm" onclick="goScheduleMonth(1)">Месяц →</button>
+<button class="btn btn-ghost btn-sm" onclick="setScheduleToday()">Сегодня</button>
+<button class="btn btn-primary btn-sm" onclick="openScheduleModal()">+ Добавить монтаж</button>
+</div>
+<div class="schedule-stats" id="scheduleStats"></div>
+</div>
+<div class="schedule-layout">
+<div class="card schedule-calendar-card">
+<div class="schedule-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+<div class="schedule-month-grid" id="scheduleMonthGrid"></div>
+</div>
+<div class="card schedule-day-card">
+<div class="card-title" id="scheduleDayTitle"><span class="icon">🧰</span> Монтажи на день</div>
+<div class="schedule-day-list" id="scheduleDayList"></div>
+</div>
+</div>
 </div>
 <!-- SETTINGS -->
 <div class="page" id="page-settings">
@@ -283,6 +314,54 @@
 <div style="margin-top:16px;text-align:right"><button class="btn btn-primary" onclick="applyModalItems()">Добавить выбранное</button></div>
 </div>
 </div>
+<div class="kp-modal-overlay" id="documentsModal" style="display:none">
+<div class="kp-modal-box">
+<div class="kp-modal-head">
+<div class="card-title" style="margin:0"><span class="icon">🧾</span> Печать документов</div>
+<button class="btn btn-ghost btn-sm" onclick="closeDocumentsModal()">✕</button>
+</div>
+<p class="modal-note">Выберите документы. Они откроются одним файлом для печати/сохранения в PDF.</p>
+<div class="doc-checks">
+<label class="doc-check"><input id="docContractCheck" type="checkbox" checked/> <span>Договор</span></label>
+<label class="doc-check"><input id="docActCheck" type="checkbox" checked/> <span>Акт выполненных монтажных работ</span></label>
+</div>
+<div class="modal-actions">
+<button class="btn btn-ghost" onclick="closeDocumentsModal()">Отмена</button>
+<button class="btn btn-primary" onclick="printSelectedDocuments()">Сформировать PDF</button>
+</div>
+</div>
+</div>
+<div class="kp-modal-overlay" id="scheduleModal" style="display:none">
+<div class="kp-modal-box kp-modal-box-wide">
+<div class="kp-modal-head">
+<div class="card-title" style="margin:0"><span class="icon">📅</span> Монтаж</div>
+<button class="btn btn-ghost btn-sm" onclick="closeScheduleModal()">✕</button>
+</div>
+<input id="scheduleEditId" type="hidden"/>
+<div class="form-grid">
+<div class="field"><label>Дата</label><input id="schDate" type="date"/></div>
+<div class="field"><label>Статус</label><select id="schStatus"><option value="new">Новая заявка</option><option value="planned">Запланирован</option><option value="confirmed">Подтверждён</option><option value="inwork">В работе</option><option value="done">Выполнен</option><option value="paid">Оплачен</option><option value="moved">Перенесён</option><option value="cancelled">Отменён</option></select></div>
+<div class="field"><label>Начало</label><input id="schStart" type="time" value="10:00"/></div>
+<div class="field"><label>Окончание</label><input id="schEnd" type="time" value="13:00"/></div>
+<div class="field"><label>Клиент</label><input id="schClient" maxlength="80" placeholder="ФИО клиента" type="text"/></div>
+<div class="field"><label>Телефон</label><input id="schPhone" maxlength="20" placeholder="+7..." type="tel"/></div>
+<div class="field span2"><label>Адрес</label><input id="schAddress" maxlength="140" placeholder="Адрес объекта" type="text"/></div>
+<div class="field span2"><label>Работы</label><textarea id="schWorks" maxlength="600" placeholder="Монтаж сплит-системы, трасса, демонтаж..."></textarea></div>
+<div class="field"><label>Сумма</label><input id="schTotal" min="0" placeholder="0" type="number"/></div>
+<div class="field"><label>Источник</label><input id="schSource" maxlength="80" placeholder="КП / звонок / заявка" type="text"/></div>
+<div class="field span2"><label>Комментарий</label><textarea id="schNotes" maxlength="500" placeholder="Подъезд, этаж, стремянка, перенос, предоплата..."></textarea></div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-danger" id="scheduleDeleteBtn" onclick="deleteScheduleJobFromModal()" style="display:none">Удалить</button>
+<span style="flex:1"></span>
+<button class="btn btn-ghost" onclick="closeScheduleModal()">Отмена</button>
+<button class="btn btn-primary" onclick="saveScheduleJob()">Сохранить</button>
+</div>
+</div>
+</div>
 
-<script defer="True" src="./app.js"></script></body>
+<script defer="True" src="./app.js"></script>
+<script defer="True" src="./documentTemplates.js"></script>
+<script defer="True" src="./documents.js"></script>
+<script defer="True" src="./schedule.js"></script></body>
 </html>

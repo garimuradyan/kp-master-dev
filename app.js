@@ -4,7 +4,7 @@ var SKEY='sb_publishable_gwb8J6z0aGUBOWYgXvzeeQ_xZvBrVj-';
 var sb=window.supabase.createClient(SURL,SKEY);
 var currentKeyId=null,currentKeyData=null;
 var services=[],priceItems=[],settings={},historyData=[],logoDataURL=null,quotePhotos=[];
-var MAX_KP=15,MAX_PHOTOS=6,MAX_PHOTO_MB=1;
+var MAX_KP=15,MAX_PHOTOS=6,MAX_PHOTO_MB=5;
 var ALLOWED_TYPES=['image/jpeg','image/jpg','image/png','image/webp'];
 
 function getStoredKey(){return localStorage.getItem('kp_access_key')||'';}
@@ -123,6 +123,7 @@ function showPage(name,el){
   var bnav=document.getElementById('bnav-'+name);
   if(bnav)bnav.classList.add('active');
   if(name==='history')renderHistory();
+  if(name==='schedule'&&typeof renderSchedule==='function')renderSchedule();
   if(name==='settings')renderPriceList();
   if(name==='admin')loadAdminData();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -477,6 +478,7 @@ function resetForm(){
   if(!confirm('Начать новое КП?'))return;
   ['c-name','c-phone','c-email','c-city','c-addr','c-notes'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('discountVal').value='';
+  if(document.getElementById('prepayVal'))document.getElementById('prepayVal').value='';
   services=[];quotePhotos=[];renderPhotos();jumpStep(1);renderServices();
 }
 
