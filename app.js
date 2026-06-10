@@ -245,11 +245,11 @@ function recalc(){
 function renderPriceList(){
   var list=document.getElementById('priceList');if(!list)return;
   list.innerHTML=priceItems.map(function(p,i){
-    return'<div class="service-row">'+
-    '<textarea rows="2" maxlength="120" placeholder="Услуга" oninput="priceItems['+i+'].name=this.value">'+esc(p.name)+'</textarea>'+
-    '<input type="number" min="0" value="'+p.price+'" oninput="priceItems['+i+'].price=parseFloat(this.value)||0">'+
-    '<input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" oninput="priceItems['+i+'].unit=this.value">'+
-    '<span></span><button class="delete-btn" onclick="removePriceItem('+i+')">✕</button></div>';
+    return'<div class="service-row settings-price-row">'+
+    '<label class="settings-price-cell settings-name-cell"><span>Услуга</span><textarea rows="2" maxlength="120" placeholder="Услуга" oninput="priceItems['+i+'].name=this.value">'+esc(p.name)+'</textarea></label>'+
+    '<label class="settings-price-cell settings-price-cell-price"><span>Цена</span><input type="number" min="0" value="'+p.price+'" placeholder="Цена" oninput="priceItems['+i+'].price=parseFloat(this.value)||0"></label>'+
+    '<label class="settings-price-cell settings-price-cell-unit"><span>Ед.</span><input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" placeholder="Ед." oninput="priceItems['+i+'].unit=this.value"></label>'+
+    '<button class="delete-btn" onclick="removePriceItem('+i+')">✕</button></div>';
   }).join('');
 }
 function addPriceItem(){priceItems.push({name:'',price:0,unit:'шт'});renderPriceList();}
@@ -276,11 +276,11 @@ function defaultEquipmentItems(){return[
 function renderEquipmentList(){
   var list=document.getElementById('equipmentPriceList');if(!list)return;
   list.innerHTML=equipmentItems.map(function(p,i){
-    return'<div class="service-row">'+
-    '<textarea rows="2" maxlength="140" placeholder="Оборудование" oninput="equipmentItems['+i+'].name=this.value">'+esc(p.name)+'</textarea>'+ 
-    '<input type="number" min="0" value="'+p.price+'" oninput="equipmentItems['+i+'].price=parseFloat(this.value)||0">'+
-    '<input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" oninput="equipmentItems['+i+'].unit=this.value">'+
-    '<span></span><button class="delete-btn" onclick="removeEquipmentItem('+i+')">✕</button></div>';
+    return'<div class="service-row settings-price-row">'+
+    '<label class="settings-price-cell settings-name-cell"><span>Оборудование</span><textarea rows="2" maxlength="140" placeholder="Оборудование" oninput="equipmentItems['+i+'].name=this.value">'+esc(p.name)+'</textarea></label>'+
+    '<label class="settings-price-cell settings-price-cell-price"><span>Цена</span><input type="number" min="0" value="'+p.price+'" placeholder="Цена" oninput="equipmentItems['+i+'].price=parseFloat(this.value)||0"></label>'+
+    '<label class="settings-price-cell settings-price-cell-unit"><span>Ед.</span><input type="text" maxlength="10" value="'+esc(p.unit||'шт')+'" placeholder="Ед." oninput="equipmentItems['+i+'].unit=this.value"></label>'+
+    '<button class="delete-btn" onclick="removeEquipmentItem('+i+')">✕</button></div>';
   }).join('');
 }
 function addEquipmentItem(){equipmentItems.push({name:'',price:0,unit:'шт'});renderEquipmentList();}
@@ -390,7 +390,7 @@ function resizeSignatureCanvas(){
   signatureCtx=signatureCanvas.getContext('2d');
   signatureCtx.setTransform(1,0,0,1,0,0);
   signatureCtx.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);
-  signatureCtx.lineWidth=2.4*ratio;signatureCtx.lineCap='round';signatureCtx.lineJoin='round';signatureCtx.strokeStyle='#111827';
+  signatureCtx.lineWidth=2.4*ratio;signatureCtx.lineCap='round';signatureCtx.lineJoin='round';signatureCtx.strokeStyle='#2563eb';
   if(saved) drawSavedSignature(saved);
 }
 function handleSignaturePointer(e){

@@ -557,3 +557,83 @@ thead th:nth-child(4){
 .schedule-services-view{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.20)}
 #scheduleModal .field.span2 > label{display:flex;align-items:center;gap:6px}
 #scheduleModal .field.span2{min-width:0}
+
+
+/* v12: settings price/equipment rows — fixed labels, width and mobile layout */
+#priceList .settings-price-row,
+#equipmentPriceList .settings-price-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(82px,104px) minmax(48px,62px) 30px;
+  gap:8px;
+  align-items:stretch;
+  padding:10px;
+  overflow:hidden;
+}
+.settings-price-cell{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+}
+.settings-price-cell>span{
+  display:block;
+  font-size:9px;
+  line-height:1;
+  color:var(--text3);
+  text-transform:uppercase;
+  letter-spacing:.9px;
+  font-weight:900;
+  padding-left:2px;
+  white-space:nowrap;
+}
+#priceList .settings-price-row textarea,
+#equipmentPriceList .settings-price-row textarea{
+  min-height:54px;
+  max-height:96px;
+  overflow:auto;
+}
+#priceList .settings-price-row input,
+#equipmentPriceList .settings-price-row input{
+  height:38px;
+  text-align:left;
+}
+.settings-price-cell-price input{
+  font-weight:800;
+  color:var(--accent);
+}
+#priceList .settings-price-row .delete-btn,
+#equipmentPriceList .settings-price-row .delete-btn{
+  align-self:center;
+  width:30px;
+  min-width:30px;
+  height:34px;
+  padding:0;
+}
+.signature-pad-wrap canvas{cursor:crosshair}
+@media(max-width:700px){
+  #priceList .settings-price-row,
+  #equipmentPriceList .settings-price-row{
+    grid-template-columns:minmax(0,1fr) minmax(76px,90px) minmax(44px,58px) 28px;
+    gap:6px;
+    padding:9px;
+  }
+  .settings-price-cell>span{font-size:8.5px;letter-spacing:.7px}
+}
+@media(max-width:430px){
+  #priceList .settings-price-row,
+  #equipmentPriceList .settings-price-row{
+    grid-template-columns:minmax(0,1fr) minmax(72px,86px) 28px;
+    grid-template-areas:
+      "name price del"
+      "name unit del";
+  }
+  .settings-name-cell{grid-area:name}
+  .settings-price-cell-price{grid-area:price}
+  .settings-price-cell-unit{grid-area:unit}
+  #priceList .settings-price-row .delete-btn,
+  #equipmentPriceList .settings-price-row .delete-btn{grid-area:del;align-self:center}
+  #priceList .settings-price-row textarea,
+  #equipmentPriceList .settings-price-row textarea{min-height:92px}
+  #priceList .settings-price-row input,
+  #equipmentPriceList .settings-price-row input{height:34px;padding:5px 6px;font-size:12px}
+}
