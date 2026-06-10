@@ -637,3 +637,43 @@ thead th:nth-child(4){
   #priceList .settings-price-row input,
   #equipmentPriceList .settings-price-row input{height:34px;padding:5px 6px;font-size:12px}
 }
+
+
+/* === v13: грамотная аналитика графика === */
+.schedule-stats>div,
+.schedule-stat-chip{
+  justify-content:space-between;
+  gap:10px;
+}
+.schedule-stats span,
+.schedule-stat-chip span{
+  order:1;
+  flex:1 1 auto;
+  color:var(--text2);
+  font-size:10px;
+  line-height:1.2;
+  text-transform:uppercase;
+  letter-spacing:.45px;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.schedule-stats b,
+.schedule-stat-chip b{
+  order:2;
+  flex:0 0 auto;
+  min-width:30px;
+  text-align:right;
+  color:var(--success);
+  font-size:18px;
+  font-weight:950;
+  line-height:1;
+  text-shadow:0 0 16px rgba(16,185,129,.22);
+}
+@media(max-width:560px){
+  .schedule-stats>div,
+  .schedule-stat-chip{gap:7px;padding:7px 8px;min-height:38px}
+  .schedule-stats span,
+  .schedule-stat-chip span{font-size:8.5px;letter-spacing:.25px;line-height:1.15}
+  .schedule-stats b,
+  .schedule-stat-chip b{font-size:15px;min-width:22px}
+}

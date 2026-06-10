@@ -19,6 +19,16 @@
     {value:'repair',label:'Ремонт'}
   ];
   var VISIT_LABELS = VISIT_TYPES.reduce(function(a,x){a[x.value]=x.label;return a;},{});
+  var VISIT_STAT_LABELS = {
+    inspection:'Осмотров',
+    first_stage:'Первых этапов',
+    second_stage:'Вторых этапов',
+    one_stage:'Монтажей в один этап',
+    route:'Закладок трассы',
+    ready_route:'Монтажей на готовую трассу',
+    maintenance:'Тех. обслуживаний (ТО)',
+    repair:'Ремонтов'
+  };
 
   window.renderSchedule = function(){
     ensureScheduleLoaded();
@@ -320,7 +330,8 @@
       counts[type] += 1;
     });
     el.innerHTML = VISIT_TYPES.map(function(type){
-      return '<div class="schedule-stat-chip"><b>'+counts[type.value]+'</b><span>'+esc(type.label)+'</span></div>';
+      var label = VISIT_STAT_LABELS[type.value] || type.label;
+      return '<div class="schedule-stat-chip"><span>'+esc(label)+'</span><b>'+counts[type.value]+'</b></div>';
     }).join('');
   }
 
