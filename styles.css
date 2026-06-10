@@ -300,9 +300,9 @@ thead th:nth-child(4){
 .schedule-day.is-empty{visibility:hidden;cursor:default}
 .schedule-day.is-selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,255,.12)}
 .schedule-day.is-today .day-num{background:var(--accent);color:#fff;border-radius:999px;min-width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(59,130,246,.22)}
-.schedule-day.has-jobs{background:linear-gradient(180deg,var(--surface2),rgba(0,200,255,.06))}
-.day-num{font-weight:900;font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}
-.day-count{position:absolute;top:6px;right:6px;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;border-radius:8px;min-width:22px;height:22px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 6px;border:1px solid rgba(255,255,255,.16);box-shadow:0 6px 14px rgba(37,99,235,.28)}
+.schedule-day.has-jobs{background:linear-gradient(180deg,var(--surface2),rgba(16,185,129,.07));border-color:rgba(16,185,129,.18)}
+.day-num{font-weight:900;font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;position:relative;z-index:1;letter-spacing:-.2px}
+.day-count{position:absolute;top:7px;right:7px;background:linear-gradient(180deg,#34d399,#10b981);color:#fff;border-radius:999px;width:24px;height:24px;min-width:24px;font-size:12px;font-weight:950;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(255,255,255,.22);box-shadow:0 8px 18px rgba(16,185,129,.32), inset 0 1px 0 rgba(255,255,255,.22);z-index:2}
 .day-money{display:none}
 .schedule-day-list{display:flex;flex-direction:column;gap:10px}
 .schedule-job{display:grid;grid-template-columns:74px minmax(0,1fr);gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;min-width:0}
@@ -319,7 +319,7 @@ thead th:nth-child(4){
 .schedule-note{margin-top:8px;font-size:12px;color:var(--text2);border-left:3px solid var(--warn);padding-left:8px;overflow-wrap:anywhere}
 .schedule-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 @media(max-width:850px){.schedule-layout{grid-template-columns:1fr}.schedule-stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.schedule-stats{grid-template-columns:1fr 1fr}.schedule-day{min-height:60px;padding:6px}.day-num{font-size:16px;min-width:26px;min-height:26px}.schedule-day.is-today .day-num{min-width:28px;height:28px}.day-count{top:5px;right:5px;min-width:18px;height:18px;font-size:10px;padding:0 4px}.schedule-job{grid-template-columns:1fr}.schedule-job-time{display:flex;gap:4px;align-items:baseline}.kp-modal-box{padding:18px}.modal-actions .btn{flex:1}.schedule-toolbar .btn{flex:1}.schedule-toolbar input[type=month]{max-width:none}}
+@media(max-width:560px){.schedule-stats{grid-template-columns:1fr 1fr}.schedule-day{min-height:60px;padding:6px}.day-num{font-size:16px;min-width:28px;min-height:28px}.schedule-day.is-today .day-num{min-width:30px;height:30px}.day-count{top:5px;right:5px;width:20px;height:20px;min-width:20px;font-size:10px}.schedule-job{grid-template-columns:1fr}.schedule-job-time{display:flex;gap:4px;align-items:baseline}.kp-modal-box{padding:18px}.modal-actions .btn{flex:1}.schedule-toolbar .btn{flex:1}.schedule-toolbar input[type=month]{max-width:none}}
 
 /* === Safe contract editing + signature pad === */
 .settings-note{font-size:12px;color:var(--text2);line-height:1.5;margin:0 0 12px}
@@ -549,3 +549,11 @@ thead th:nth-child(4){
   #scheduleModal .schedule-item-row{grid-template-columns:minmax(0,1fr) 44px 26px!important}
   #scheduleModal .schedule-item-total{grid-column:1/-1;text-align:left}
 }
+
+/* v11: равноправное отображение оборудования и работ в графике */
+.schedule-equipment-view b,
+.schedule-services-view b{display:inline-block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.schedule-equipment-view{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.22)}
+.schedule-services-view{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.20)}
+#scheduleModal .field.span2 > label{display:flex;align-items:center;gap:6px}
+#scheduleModal .field.span2{min-width:0}

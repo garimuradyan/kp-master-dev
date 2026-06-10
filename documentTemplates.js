@@ -93,6 +93,7 @@
       var c = ctx.client;
       var m = ctx.master;
       var t = ctx.totals;
+      var worksTotal = (t && typeof t.worksSubtotal !== 'undefined') ? t.worksSubtotal : ctx.services.reduce(function(sum,s){return sum+(parseFloat(s.price)||0)*(parseFloat(s.qty)||1);},0);
       var rows = ctx.services.map(function(s,i){
         return '<tr><td>'+(i+1)+'</td><td>'+ctx.esc(s.name)+'</td><td>'+ctx.fmt(s.price)+'</td><td>'+ctx.esc(s.qty)+'</td><td>'+ctx.fmt(s.price*s.qty)+'</td></tr>';
       }).join('');
@@ -104,7 +105,7 @@
         '<p>'+ctx.esc(c.name || '____________________________')+', именуемый/ая в дальнейшем «Заказчик», с одной стороны, и '+ctx.esc(m.company || '____________________________')+', именуемый/ая в дальнейшем «Подрядчик», с другой стороны, составили настоящий акт о нижеследующем:</p>'+
         '<p>Подрядчик выполнил, а Заказчик принял работы на объекте по адресу: '+ctx.esc(c.addr || '____________________________')+'.</p>'+
         '<table><thead><tr><th>№</th><th>Наименование работ</th><th>Цена</th><th>Кол.</th><th>Сумма</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-        '<div class="doc-total"><span>Итого по акту:</span><b>'+ctx.fmt(t.grand)+'</b></div>'+
+        '<div class="doc-total"><span>Итого по акту:</span><b>'+ctx.fmt(worksTotal)+'</b></div>'+
         '<p>Работы выполнены в полном объёме. Заказчик результат работ принял. Претензий по объёму и качеству выполненных работ на момент подписания акта стороны не имеют.</p>'+
         '<div class="doc-sign-grid compact">'+
           '<div><b>ПОДРЯДЧИК:</b><br>'+ctx.esc(m.company || '')+'<div class="doc-sign-title">Подпись Подрядчика:</div>'+signatureBlock(ctx)+'</div>'+

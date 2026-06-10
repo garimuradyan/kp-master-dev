@@ -5,6 +5,7 @@
   var scheduleSelectedDate = dateKey(new Date());
   var loadedForKey = null;
   var scheduleModalItems = [];
+  var scheduleModalEquipment = [];
   var scheduleModalLockedByQuote = false;
 
   var VISIT_TYPES = [
@@ -66,7 +67,7 @@
     var job = jobId ? scheduleJobs.find(function(x){return x.id===jobId;}) : null;
     fillScheduleModal(job || {
       id:'', date:scheduleSelectedDate || dateKey(new Date()), start:'10:00', end:'13:00', visitType:'inspection',
-      clientName:'', phone:'', address:'', items:[], works:'', total:'', source:'Без КП', notes:''
+      clientName:'', phone:'', address:'', items:[], equipment:[], works:'', equipmentText:'', total:'', source:'Без КП', notes:''
     });
     var modal = document.getElementById('scheduleModal');
     if(modal) modal.style.display='flex';
@@ -77,11 +78,13 @@
     var c = typeof getClientData === 'function' ? getClientData() : {};
     var t = typeof getTotals === 'function' ? getTotals() : {grand:0};
     var items = JSON.parse(JSON.stringify(window.services || []));
-    if(!items.length){toast('Добавьте работы в КП','error');return;}
+    var eq = JSON.parse(JSON.stringify(window.equipment || []));
+    if(!items.length && !eq.length){toast('Добавьте работы или оборудование в КП','error');return;}
     var quoteSnapshot = makeQuoteSnapshot();
     fillScheduleModal({
       id:'', date:scheduleSelectedDate || dateKey(new Date()), start:'10:00', end:'13:00', visitType:'one_stage',
-      clientName:c.name||'', phone:c.phone||'', address:c.addr||'', items:items, works:itemsToWorks(items),
+      clientName:c.name||'', phone:c.phone||'', address:c.addr||'', items:items, equipment:eq,
+      works:itemsToText(items), equipmentText:itemsToText(eq),
       total:t.grand||0, source:'КП', notes:c.notes||'', quoteSnapshot: quoteSnapshot
     });
     var modal = document.getElementById('scheduleModal');
@@ -100,19 +103,41 @@
     var p=(window.priceItems||[])[parseInt(sel.value,10)];
     if(!p){toast('Услуга не найдена','error');return;}
     scheduleModalItems.push({name:p.name||'',price:parseFloat(p.price)||0,qty:1,unit:p.unit||'шт'});
-    renderScheduleItemsEditor();
+    renderScheduleEditors();
+  };
+
+  window.addScheduleEquipmentFromSelect = function(){
+    if(scheduleModalLockedByQuote) return;
+    var sel=document.getElementById('schEquipmentSelect');
+    if(!sel || !sel.value){toast('Выберите оборудование из списка','error');return;}
+    var p=(window.equipmentItems||[])[parseInt(sel.value,10)];
+    if(!p){toast('Оборудование не найдено','error');return;}
+    scheduleModalEquipment.push({name:p.name||'',price:parseFloat(p.price)||0,qty:1,unit:p.unit||'шт'});
+    renderScheduleEditors();
   };
 
   window.changeScheduleItemQty = function(i,v){
     if(scheduleModalLockedByQuote || !scheduleModalItems[i]) return;
     scheduleModalItems[i].qty = Math.max(1,parseFloat(v)||1);
-    renderScheduleItemsEditor();
+    renderScheduleEditors();
+  };
+
+  window.changeScheduleEquipmentQty = function(i,v){
+    if(scheduleModalLockedByQuote || !scheduleModalEquipment[i]) return;
+    scheduleModalEquipment[i].qty = Math.max(1,parseFloat(v)||1);
+    renderScheduleEditors();
   };
 
   window.removeScheduleItem = function(i){
     if(scheduleModalLockedByQuote) return;
     scheduleModalItems.splice(i,1);
-    renderScheduleItemsEditor();
+    renderScheduleEditors();
+  };
+
+  window.removeScheduleEquipment = function(i){
+    if(scheduleModalLockedByQuote) return;
+    scheduleModalEquipment.splice(i,1);
+    renderScheduleEditors();
   };
 
   window.saveScheduleJob = function(){
@@ -121,8 +146,9 @@
     var old = id ? scheduleJobs.find(function(x){return x.id===id;}) : null;
     var quoteSnapshot = (old && old.quoteSnapshot) || window.__pendingQuoteSnapshot || null;
     var lockedByQuote = !!quoteSnapshot;
-    var items = lockedByQuote ? normalizeItemsFromQuoteSnapshot(quoteSnapshot) : JSON.parse(JSON.stringify(scheduleModalItems || []));
-    var total = lockedByQuote ? quoteTotal(quoteSnapshot) : calcItemsTotal(items);
+    var items = lockedByQuote ? normalizeWorksFromQuoteSnapshot(quoteSnapshot) : JSON.parse(JSON.stringify(scheduleModalItems || []));
+    var eq = lockedByQuote ? normalizeEquipmentFromQuoteSnapshot(quoteSnapshot) : JSON.parse(JSON.stringify(scheduleModalEquipment || []));
+    var total = lockedByQuote ? quoteTotal(quoteSnapshot) : (calcItemsTotal(items)+calcItemsTotal(eq));
     var source = lockedByQuote ? 'КП' : 'Без КП';
 
     var job = {
@@ -135,7 +161,9 @@
       phone: val('schPhone'),
       address: val('schAddress'),
       items: items,
-      works: itemsToWorks(items),
+      equipment: eq,
+      works: itemsToText(items),
+      equipmentText: itemsToText(eq),
       total: total,
       source: source,
       notes: val('schNotes'),
@@ -146,7 +174,7 @@
 
     if(!job.date){toast('Выберите дату','error');return;}
     if(!job.clientName){toast('Введите данные клиента','error');return;}
-    if(!items.length){toast('Добавьте работы из списка услуг','error');return;}
+    if(!items.length && !eq.length){toast('Добавьте работы или оборудование','error');return;}
 
     var idx = scheduleJobs.findIndex(function(x){return x.id===job.id;});
     if(idx>=0) scheduleJobs[idx]=job; else scheduleJobs.push(job);
@@ -185,10 +213,12 @@
     setIf('c-addr',q.client && q.client.addr);
     setIf('c-notes',q.client && q.client.notes);
     window.services = JSON.parse(JSON.stringify(q.services || []));
+    window.equipment = JSON.parse(JSON.stringify(q.equipment || []));
     if(q.discount){setIf('discountVal',q.discount.val||'');setIf('discountType',q.discount.type||'percent');}
     if(q.prepay !== undefined) setIf('prepayVal',q.prepay||'');
     showPage('new',null);
     jumpStep(2);
+    if(typeof renderEquipment==='function')renderEquipment();
     renderServices();
     toast('КП из графика загружено ✓','success');
   };
@@ -197,8 +227,11 @@
     var quoteSnapshot = job.quoteSnapshot || null;
     scheduleModalLockedByQuote = !!quoteSnapshot || job.source==='КП';
     scheduleModalItems = scheduleModalLockedByQuote
-      ? (quoteSnapshot ? normalizeItemsFromQuoteSnapshot(quoteSnapshot) : normalizeItemsFromJob(job))
+      ? (quoteSnapshot ? normalizeWorksFromQuoteSnapshot(quoteSnapshot) : normalizeItemsFromJob(job))
       : normalizeItemsFromJob(job);
+    scheduleModalEquipment = scheduleModalLockedByQuote
+      ? (quoteSnapshot ? normalizeEquipmentFromQuoteSnapshot(quoteSnapshot) : normalizeEquipmentFromJob(job))
+      : normalizeEquipmentFromJob(job);
 
     setIf('scheduleEditId',job.id||'');
     setIf('schDate',job.date||dateKey(new Date()));
@@ -208,8 +241,9 @@
     setIf('schClient',job.clientName||'');
     setIf('schPhone',job.phone||'');
     setIf('schAddress',job.address||'');
-    setIf('schWorks',itemsToWorks(scheduleModalItems));
-    setIf('schTotal',scheduleModalLockedByQuote && quoteSnapshot ? quoteTotal(quoteSnapshot) : (job.total || calcItemsTotal(scheduleModalItems) || ''));
+    setIf('schWorks',itemsToText(scheduleModalItems));
+    setIf('schEquipment',itemsToText(scheduleModalEquipment));
+    setIf('schTotal',scheduleModalLockedByQuote && quoteSnapshot ? quoteTotal(quoteSnapshot) : (job.total || calcItemsTotal(scheduleModalItems)+calcItemsTotal(scheduleModalEquipment) || ''));
     setIf('schSource',scheduleModalLockedByQuote ? 'КП' : 'Без КП');
     setIf('schSourceView',scheduleModalLockedByQuote ? 'КП' : 'Без КП');
     setIf('schNotes',job.notes||'');
@@ -217,14 +251,17 @@
     if(del) del.style.display = job.id ? '' : 'none';
     window.__pendingQuoteSnapshot = quoteSnapshot;
     renderPriceSelect();
+    renderEquipmentSelect();
     setScheduleQuoteLock(scheduleModalLockedByQuote);
-    renderScheduleItemsEditor();
+    renderScheduleEditors();
   }
 
   function setScheduleQuoteLock(locked){
     ['schClient','schPhone','schAddress'].forEach(function(id){var el=document.getElementById(id);if(el)el.readOnly=locked;});
     var picker=document.getElementById('schPricePicker');
     if(picker)picker.style.display=locked?'none':'flex';
+    var eqPicker=document.getElementById('schEquipmentPicker');
+    if(eqPicker)eqPicker.style.display=locked?'none':'flex';
     var note=document.getElementById('schQuoteLockNote');
     if(note)note.style.display=locked?'':'none';
   }
@@ -233,28 +270,42 @@
     var sel=document.getElementById('schPriceSelect');
     if(!sel)return;
     var items=window.priceItems||[];
-    if(!items.length){sel.innerHTML='<option value="">Прайс-лист пуст</option>';return;}
+    if(!items.length){sel.innerHTML='<option value="">Прайс-лист работ пуст</option>';return;}
     sel.innerHTML=items.map(function(p,i){return '<option value="'+i+'">'+esc(p.name)+' — '+fmt(parseFloat(p.price)||0)+'</option>';}).join('');
   }
 
-  function renderScheduleItemsEditor(){
-    var list=document.getElementById('schItemsList');
+  function renderEquipmentSelect(){
+    var sel=document.getElementById('schEquipmentSelect');
+    if(!sel)return;
+    var items=window.equipmentItems||[];
+    if(!items.length){sel.innerHTML='<option value="">Список оборудования пуст</option>';return;}
+    sel.innerHTML=items.map(function(p,i){return '<option value="'+i+'">'+esc(p.name)+' — '+fmt(parseFloat(p.price)||0)+'</option>';}).join('');
+  }
+
+  function renderScheduleEditors(){
+    renderScheduleBlock('schEquipmentList', scheduleModalEquipment, 'Оборудование не выбрано', 'changeScheduleEquipmentQty', 'removeScheduleEquipment');
+    renderScheduleBlock('schItemsList', scheduleModalItems, 'Работы не выбраны', 'changeScheduleItemQty', 'removeScheduleItem');
+    setIf('schWorks',itemsToText(scheduleModalItems));
+    setIf('schEquipment',itemsToText(scheduleModalEquipment));
+    setIf('schTotal',scheduleModalLockedByQuote && window.__pendingQuoteSnapshot ? quoteTotal(window.__pendingQuoteSnapshot) : calcItemsTotal(scheduleModalItems)+calcItemsTotal(scheduleModalEquipment));
+  }
+
+  function renderScheduleBlock(listId, arr, emptyText, qtyFn, removeFn){
+    var list=document.getElementById(listId);
     if(!list)return;
-    if(!scheduleModalItems.length){
-      list.innerHTML='<div class="schedule-items-empty">Работы не выбраны</div>';
-    } else {
-      list.innerHTML=scheduleModalItems.map(function(it,i){
-        return '<div class="schedule-item-row">'+
-          '<div class="schedule-item-name">'+esc(it.name)+'</div>'+ 
-          '<div class="schedule-item-price">'+fmt(it.price||0)+'</div>'+ 
-          '<input type="number" min="1" value="'+esc(it.qty||1)+'" '+(scheduleModalLockedByQuote?'readonly':'oninput="changeScheduleItemQty('+i+',this.value)"')+'>'+ 
-          '<div class="schedule-item-total">'+fmt((parseFloat(it.price)||0)*(parseFloat(it.qty)||1))+'</div>'+ 
-          (scheduleModalLockedByQuote?'':'<button class="delete-btn" onclick="removeScheduleItem('+i+')">✕</button>')+
-        '</div>';
-      }).join('');
+    if(!arr.length){
+      list.innerHTML='<div class="schedule-items-empty">'+emptyText+'</div>';
+      return;
     }
-    setIf('schWorks',itemsToWorks(scheduleModalItems));
-    setIf('schTotal',scheduleModalLockedByQuote && window.__pendingQuoteSnapshot ? quoteTotal(window.__pendingQuoteSnapshot) : calcItemsTotal(scheduleModalItems));
+    list.innerHTML=arr.map(function(it,i){
+      return '<div class="schedule-item-row">'+
+        '<div class="schedule-item-name">'+esc(it.name)+'</div>'+ 
+        '<div class="schedule-item-price">'+fmt(it.price||0)+'</div>'+ 
+        '<input type="number" min="1" value="'+esc(it.qty||1)+'" '+(scheduleModalLockedByQuote?'readonly':'oninput="'+qtyFn+'('+i+',this.value)"')+'>'+ 
+        '<div class="schedule-item-total">'+fmt((parseFloat(it.price)||0)*(parseFloat(it.qty)||1))+'</div>'+ 
+        (scheduleModalLockedByQuote?'':'<button class="delete-btn" onclick="'+removeFn+'('+i+')">✕</button>')+
+      '</div>';
+    }).join('');
   }
 
   function renderScheduleStats(){
@@ -286,7 +337,6 @@
       var dt = new Date(y,m,d);
       var key = dateKey(dt);
       var dayJobs = scheduleJobs.filter(function(j){return j.date===key;});
-      var total = dayJobs.reduce(function(s,j){return s+(parseFloat(j.total)||0);},0);
       var classes = ['schedule-day'];
       if(key===scheduleSelectedDate) classes.push('is-selected');
       if(key===dateKey(new Date())) classes.push('is-today');
@@ -306,13 +356,15 @@
     if(!jobs.length){list.innerHTML='<div class="empty-state" style="padding:30px 10px"><div class="empty-icon">📭</div><p>На этот день выездов нет</p><button class="btn btn-primary btn-sm" onclick="openScheduleModal()">+ Добавить</button></div>';return;}
     list.innerHTML = jobs.map(function(j){
       var typeLabel = VISIT_LABELS[j.visitType] || VISIT_LABELS[visitTypeFromLegacy(j.status)] || 'Выезд';
-      var works = j.works || itemsToWorks(normalizeItemsFromJob(j));
+      var works = j.works || itemsToText(normalizeItemsFromJob(j));
+      var eqText = j.equipmentText || itemsToText(normalizeEquipmentFromJob(j));
       return '<div class="schedule-job">'+
         '<div class="schedule-job-time"><b>'+esc(j.start||'—')+'</b>'+(j.end?'–'+esc(j.end):'')+'</div>'+ 
         '<div class="schedule-job-body"><div class="schedule-job-top"><b>'+esc(j.clientName)+'</b><span class="schedule-status visit-type-badge">'+esc(typeLabel)+'</span></div>'+ 
         (j.phone?'<div class="schedule-line">☎ '+esc(j.phone)+'</div>':'')+
         (j.address?'<div class="schedule-line">📍 '+esc(j.address)+'</div>':'')+
-        (works?'<div class="schedule-works">'+esc(works).replace(/\n/g,'<br>')+'</div>':'')+
+        (eqText?'<div class="schedule-works schedule-equipment-view"><b>Оборудование</b><br>'+esc(eqText).replace(/\n/g,'<br>')+'</div>':'')+
+        (works?'<div class="schedule-works schedule-services-view"><b>Работы</b><br>'+esc(works).replace(/\n/g,'<br>')+'</div>':'')+
         '<div class="schedule-job-bottom"><span>'+(j.total?fmt(j.total):'Без суммы')+'</span>'+(j.source?'<span>'+esc(j.source)+'</span>':'')+'</div>'+ 
         (j.notes?'<div class="schedule-note">'+esc(j.notes)+'</div>':'')+
         '<div class="schedule-actions"><button class="btn btn-ghost btn-sm" onclick="openScheduleModal(\''+j.id+'\')">Изменить</button>'+(j.quoteSnapshot?'<button class="btn btn-ghost btn-sm" onclick="loadScheduleQuote(\''+j.id+'\')">Открыть КП</button>':'')+'<button class="btn btn-danger btn-sm" onclick="deleteScheduleJob(\''+j.id+'\')">Удалить</button></div>'+ 
@@ -326,6 +378,7 @@
     return {
       client:Object.assign({},c),
       services:JSON.parse(JSON.stringify(window.services || [])),
+      equipment:JSON.parse(JSON.stringify(window.equipment || [])),
       totals:Object.assign({},totals),
       discount:{val:parseFloat(val('discountVal'))||0,type:val('discountType')||'percent'},
       prepay:parseFloat(val('prepayVal'))||0,
@@ -343,15 +396,23 @@
 
   function saveScheduleJobs(){localStorage.setItem(storageKey(), JSON.stringify(scheduleJobs));}
   function storageKey(){return 'kp_schedule_'+(window.currentKeyId || localStorage.getItem('kp_key_id') || 'guest');}
-  function normalizeItemsFromQuoteSnapshot(q){return JSON.parse(JSON.stringify((q && q.services) || []));}
-  function quoteTotal(q){return (q && q.totals && parseFloat(q.totals.grand)) || calcItemsTotal(normalizeItemsFromQuoteSnapshot(q));}
+  function normalizeWorksFromQuoteSnapshot(q){return JSON.parse(JSON.stringify((q && q.services) || []));}
+  function normalizeEquipmentFromQuoteSnapshot(q){return JSON.parse(JSON.stringify((q && q.equipment) || []));}
+  function quoteTotal(q){return (q && q.totals && parseFloat(q.totals.grand)) || (calcItemsTotal(normalizeWorksFromQuoteSnapshot(q))+calcItemsTotal(normalizeEquipmentFromQuoteSnapshot(q)));}
   function normalizeItemsFromJob(job){
     if(job && Array.isArray(job.items) && job.items.length) return JSON.parse(JSON.stringify(job.items));
-    if(job && job.quoteSnapshot) return normalizeItemsFromQuoteSnapshot(job.quoteSnapshot);
-    if(job && job.works){return String(job.works).split('\n').filter(Boolean).map(function(name){return {name:name.replace(/ × .*$/,''),price:0,qty:1,unit:'шт'};});}
+    if(job && job.quoteSnapshot) return normalizeWorksFromQuoteSnapshot(job.quoteSnapshot);
+    if(job && job.works){return textToItems(job.works);}
     return [];
   }
-  function itemsToWorks(items){return (items||[]).map(function(s){return (s.name||'') + (s.qty ? ' × '+s.qty : '');}).filter(Boolean).join('\n');}
+  function normalizeEquipmentFromJob(job){
+    if(job && Array.isArray(job.equipment) && job.equipment.length) return JSON.parse(JSON.stringify(job.equipment));
+    if(job && job.quoteSnapshot) return normalizeEquipmentFromQuoteSnapshot(job.quoteSnapshot);
+    if(job && job.equipmentText){return textToItems(job.equipmentText);}
+    return [];
+  }
+  function textToItems(text){return String(text||'').split('\n').filter(Boolean).map(function(name){return {name:name.replace(/ × .*$/,''),price:0,qty:1,unit:'шт'};});}
+  function itemsToText(items){return (items||[]).map(function(s){return (s.name||'') + (s.qty ? ' × '+s.qty : '');}).filter(Boolean).join('\n');}
   function calcItemsTotal(items){return (items||[]).reduce(function(sum,s){return sum+(parseFloat(s.price)||0)*(parseFloat(s.qty)||1);},0);}
   function visitTypeFromLegacy(status){return 'one_stage';}
   function dateKey(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
@@ -359,7 +420,6 @@
   function pad2(n){return String(n).padStart(2,'0');}
   function val(id){var el=document.getElementById(id);return el?el.value:'';}
   function setIf(id,v){var el=document.getElementById(id);if(el)el.value=(v==null?'':v);}
-  function shortMoney(n){n=Number(n)||0;if(n>=1000000)return Math.round(n/100000)/10+'м';if(n>=1000)return Math.round(n/1000)+'к';return n?String(n):'';}
   function syncMonthInput(){
     var v=scheduleMonth.getFullYear()+'-'+pad2(scheduleMonth.getMonth()+1);
     var el=document.getElementById('scheduleMonthInput');if(el)el.value=v;
