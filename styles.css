@@ -875,3 +875,32 @@ thead th:nth-child(4){
   #priceList .settings-price-row textarea,
   #equipmentPriceList .settings-price-row textarea{min-height:88px!important}
 }
+
+/* ABOUT PAGE UPDATE */
+.about-hero{
+  text-align:center;
+  background:linear-gradient(180deg,rgba(59,130,246,.12),rgba(16,185,129,.05));
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 18px;
+  margin-bottom:16px;
+}
+.about-hero .about-logo{font-size:28px;font-weight:900;letter-spacing:2px;color:var(--accent);margin-bottom:8px}
+.about-hero .about-version{font-size:14px;font-weight:800;color:var(--text);margin-bottom:10px}
+.about-lead{max-width:720px;margin:0 auto;font-size:14px;line-height:1.6;color:var(--text2)}
+.feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.feature-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;min-width:0}
+.feature-card b{display:block;font-size:13px;color:var(--text);margin-bottom:6px}
+.feature-card span{display:block;font-size:12px;line-height:1.5;color:var(--text2)}
+.about-text{font-size:13px;line-height:1.55;color:var(--text2);margin:0 0 10px}
+.about-pricing-section .tariff-cards{align-items:stretch}
+.tariff-card.tariff-month{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:122px;border-color:rgba(59,130,246,.35);background:rgba(59,130,246,.06)}
+.tariff-note{font-size:11px;line-height:1.35;color:var(--text2);margin-top:6px;text-align:center}
+.payment-note{font-size:12px;color:var(--text2);margin-top:12px;text-align:center}
+@media(max-width:700px){
+  .feature-grid{grid-template-columns:1fr}
+  .about-hero{padding:20px 14px}
+  .about-hero .about-logo{font-size:24px}
+  .tariff-cards{grid-template-columns:1fr}
+  .tariff-card{min-height:auto;padding:16px 12px}
+}
