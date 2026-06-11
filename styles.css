@@ -1627,3 +1627,55 @@ thead th:nth-child(4){
   .about-v21-price-value{font-size:32px}
   .about-v21-price-sub{font-size:16px}
 }
+
+
+/* ===== ABOUT PAGE TEXT FIXES V23 ===== */
+#page-about .about-v21-feature-num{
+  display:none!important;
+}
+#page-about .about-v21-feature-card{
+  display:block!important;
+}
+#page-about .about-v21-stat-card em{
+  display:block;
+  margin-top:10px;
+  color:rgba(159,178,200,.72);
+  font-size:11px;
+  line-height:1.4;
+  font-style:normal;
+  font-weight:600;
+}
+#page-about .about-v21-payment-note{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+#page-about .about-v21-bot-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  padding:0 18px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2563eb,#3b82f6);
+  color:#fff;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:900;
+  box-shadow:0 14px 28px rgba(37,99,235,.22);
+  white-space:nowrap;
+}
+#page-about .about-v21-bot-link:hover{
+  background:linear-gradient(135deg,#1d4ed8,#2563eb);
+}
+@media(max-width:760px){
+  #page-about .about-v21-payment-note{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  #page-about .about-v21-bot-link{
+    width:100%;
+  }
+}
